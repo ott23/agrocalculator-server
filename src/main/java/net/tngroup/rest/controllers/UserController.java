@@ -2,8 +2,8 @@ package net.tngroup.rest.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.tngroup.rest.domains.Person;
-import net.tngroup.rest.repositories.PersonRepository;
+import net.tngroup.rest.domains.User;
+import net.tngroup.rest.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,19 +11,19 @@ import java.util.List;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/person")
-public class PersonController {
+@RequestMapping("/user")
+public class UserController {
 
     @Autowired
-    PersonRepository personRepository;
+    UserRepository userRepository;
 
     @RequestMapping
     public String getList() {
         String response;
         try {
-            List<Person> personList = personRepository.findAll();
+            List<User> userList = userRepository.findAll();
             ObjectMapper mapper = new ObjectMapper();
-            response = mapper.writeValueAsString(personList);
+            response = mapper.writeValueAsString(userList);
         } catch (JsonProcessingException e) {
             response = "Server error";
         }
@@ -34,12 +34,12 @@ public class PersonController {
     public String getById(@PathVariable int id) {
         String response;
         try {
-            if (personRepository.findById(id).isPresent()) {
+            if (userRepository.findById(id).isPresent()) {
                 ObjectMapper mapper = new ObjectMapper();
-                Person person = personRepository.findById(id).get();
-                response = mapper.writeValueAsString(person);
+                User user = userRepository.findById(id).get();
+                response = mapper.writeValueAsString(user);
             } else {
-                throw new Exception("Person not found");
+                throw new Exception("User not found");
             }
         } catch (Exception e) {
             response = "Server error";
@@ -52,9 +52,9 @@ public class PersonController {
         String response;
         try {
             ObjectMapper mapper = new ObjectMapper();
-            Person person = mapper.readValue(jsonRequest, Person.class);
-            person = personRepository.save(person);
-            response = mapper.writeValueAsString(person);
+            User user = mapper.readValue(jsonRequest, User.class);
+            user = userRepository.save(user);
+            response = mapper.writeValueAsString(user);
         } catch (Exception e) {
             response = "Server error";
         }
@@ -63,7 +63,7 @@ public class PersonController {
 
     @RequestMapping("/delete/{id}")
     public void deleteById(@PathVariable int id) {
-        personRepository.deleteById(id);
+        userRepository.deleteById(id);
     }
 
 }

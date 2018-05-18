@@ -1,4 +1,4 @@
-package net.tngroup.rest.domain;
+package net.tngroup.rest.domains;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,7 +18,7 @@ public class Person {
     @Id
     @Column
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     @Column
     @NonNull
@@ -26,5 +26,5 @@ public class Person {
 
     @Column
     @NonNull
-    private int age;
+    private Integer age;
 }

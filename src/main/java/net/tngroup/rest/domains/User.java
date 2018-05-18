@@ -1,9 +1,8 @@
-package net.tngroup.rest.domain;
+package net.tngroup.rest.domains;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.tngroup.rest.services.EncoderService;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -12,17 +11,15 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 
-@Builder
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table
 public class User implements UserDetails {
 
     @Id
     @Column
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @Column
@@ -33,8 +30,12 @@ public class User implements UserDetails {
     @NotNull
     private String password;
 
-    @Column
-    private String token;
+
+    public void setPassword(String password) {
+        EncoderService encoderService = new EncoderService();
+        this.password = encoderService.encode(password);
+    }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -60,4 +61,5 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
 }
