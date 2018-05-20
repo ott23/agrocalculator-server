@@ -1,8 +1,8 @@
-package net.tngroup.rest.domains;
+package net.tngroup.rest.models;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.tngroup.rest.services.EncoderService;
+import net.tngroup.rest.security.services.EncoderService;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 

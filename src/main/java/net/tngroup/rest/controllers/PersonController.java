@@ -2,7 +2,7 @@ package net.tngroup.rest.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.tngroup.rest.domains.Person;
+import net.tngroup.rest.models.Person;
 import net.tngroup.rest.repositories.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

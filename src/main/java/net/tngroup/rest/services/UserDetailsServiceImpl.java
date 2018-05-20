@@ -1,6 +1,6 @@
 package net.tngroup.rest.services;
 
-import net.tngroup.rest.domains.User;
+import net.tngroup.rest.models.User;
 import net.tngroup.rest.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -1,6 +1,6 @@
 package net.tngroup.rest.repositories;
 
-import net.tngroup.rest.domains.User;
+import net.tngroup.rest.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

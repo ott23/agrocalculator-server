@@ -1,4 +1,4 @@
-package net.tngroup.rest.services;
+package net.tngroup.rest.security.services;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;

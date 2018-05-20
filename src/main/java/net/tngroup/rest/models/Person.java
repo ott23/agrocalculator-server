@@ -1,4 +1,4 @@
-package net.tngroup.rest.domains;
+package net.tngroup.rest.models;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
