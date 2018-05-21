@@ -13,7 +13,8 @@ public class TokenAuthenticationService {
     static final long EXPIRATION_TIME = 864_000_000; // 10 days
     static final String SECRET = "ThisIsASecret";
     static final String TOKEN_PREFIX = "Bearer";
-    static final String HEADER_STRING = "Authorization";
+    static final String REQUEST_HEADER_STRING = "Authorization";
+    static final String TOKEN_HEADER_STRING = "X-Token";
 
     public static void addAuthentication(HttpServletResponse res, String username) {
         String JWT = Jwts.builder()
@@ -21,11 +22,11 @@ public class TokenAuthenticationService {
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(io.jsonwebtoken.SignatureAlgorithm.HS256, SECRET)
                 .compact();
-        res.addHeader(HEADER_STRING, TOKEN_PREFIX + " " + JWT);
+        res.addHeader(TOKEN_HEADER_STRING, JWT);
     }
 
     public static Authentication getAuthentication(HttpServletRequest request) {
-        String token = request.getHeader(HEADER_STRING);
+        String token = request.getHeader(REQUEST_HEADER_STRING);
         if (token != null) {
             String user = Jwts.parser()
                     .setSigningKey(SECRET)

@@ -19,6 +19,8 @@ public class UserController {
 
     @RequestMapping
     public String getList() {
+        System.out.println("test");
+
         String response;
         try {
             List<User> userList = userRepository.findAll();
