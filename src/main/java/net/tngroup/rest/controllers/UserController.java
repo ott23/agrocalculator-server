@@ -19,8 +19,6 @@ public class UserController {
 
     @RequestMapping
     public String getList() {
-        System.out.println("test");
-
         String response;
         try {
             List<User> userList = userRepository.findAll();
@@ -32,13 +30,30 @@ public class UserController {
         return response;
     }
 
-    @RequestMapping("/get/{id}")
+    @RequestMapping("/getById/{id}")
     public String getById(@PathVariable int id) {
         String response;
         try {
             if (userRepository.findById(id).isPresent()) {
                 ObjectMapper mapper = new ObjectMapper();
                 User user = userRepository.findById(id).get();
+                response = mapper.writeValueAsString(user);
+            } else {
+                throw new Exception("User not found");
+            }
+        } catch (Exception e) {
+            response = "Server error";
+        }
+        return response;
+    }
+
+    @RequestMapping("/getByUsername/{username}")
+    public String getByUsername(@PathVariable String username) {
+        String response;
+        try {
+            User user = userRepository.findUserByUsername(username);
+            if (user != null) {
+                ObjectMapper mapper = new ObjectMapper();
                 response = mapper.writeValueAsString(user);
             } else {
                 throw new Exception("User not found");
