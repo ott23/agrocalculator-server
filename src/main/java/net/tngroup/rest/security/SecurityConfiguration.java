@@ -34,7 +34,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         configuration.setAllowedOrigins(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST"));
         configuration.setAllowedHeaders(Arrays.asList("X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization"));
-        configuration.setExposedHeaders(Arrays.asList("X-Token"));
+        configuration.setExposedHeaders(Arrays.asList("X-Token", "X-User"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -47,24 +47,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .userDetailsService(userDetailsService)
                 .passwordEncoder(encoderService.getEncoder());
     }
-
-    /*
-    @Override
-    protected void configure(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity
-                .httpBasic()
-                .and()
-                .authorizeRequests()
-                .antMatchers("/user**", "/user/**").permitAll()
-                .antMatchers("/console**", "/console/**").permitAll()
-                .antMatchers("/login**").permitAll()
-                .anyRequest().authenticated();
-        //.anyRequest().permitAll();
-
-        httpSecurity.csrf().disable();
-        httpSecurity.headers().frameOptions().disable();
-    }
-    */
 
     protected void configure(HttpSecurity http) throws Exception {
         http

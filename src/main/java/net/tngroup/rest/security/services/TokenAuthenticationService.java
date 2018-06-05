@@ -15,6 +15,7 @@ public class TokenAuthenticationService {
     static final String TOKEN_PREFIX = "Bearer";
     static final String REQUEST_HEADER_STRING = "Authorization";
     static final String TOKEN_HEADER_STRING = "X-Token";
+    static final String USER_HEADER_STRING = "X-User";
 
     public static void addAuthentication(HttpServletResponse res, String username) {
         String JWT = Jwts.builder()
@@ -23,6 +24,7 @@ public class TokenAuthenticationService {
                 .signWith(io.jsonwebtoken.SignatureAlgorithm.HS256, SECRET)
                 .compact();
         res.addHeader(TOKEN_HEADER_STRING, JWT);
+        res.addHeader(USER_HEADER_STRING, username);
     }
 
     public static Authentication getAuthentication(HttpServletRequest request) {
