@@ -1,9 +1,9 @@
-package net.tngroup.rest.controllers;
+package net.tngroup.acserver.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.tngroup.rest.models.User;
-import net.tngroup.rest.repositories.UserRepository;
+import net.tngroup.acserver.models.User;
+import net.tngroup.acserver.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +25,7 @@ public class UserController {
             ObjectMapper mapper = new ObjectMapper();
             response = mapper.writeValueAsString(userList);
         } catch (JsonProcessingException e) {
+            e.printStackTrace();
             response = "Server error";
         }
         return response;
@@ -73,6 +74,7 @@ public class UserController {
             user = userRepository.save(user);
             response = mapper.writeValueAsString(user);
         } catch (Exception e) {
+            e.printStackTrace();
             response = "Server error";
         }
         return response;

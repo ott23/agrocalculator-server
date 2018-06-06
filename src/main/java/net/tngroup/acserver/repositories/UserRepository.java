@@ -1,6 +1,6 @@
-package net.tngroup.rest.repositories;
+package net.tngroup.acserver.repositories;
 
-import net.tngroup.rest.models.User;
+import net.tngroup.acserver.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

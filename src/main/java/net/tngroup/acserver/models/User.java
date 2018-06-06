@@ -1,15 +1,17 @@
-package net.tngroup.rest.models;
+package net.tngroup.acserver.models;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.tngroup.rest.security.services.EncoderService;
+import net.tngroup.acserver.security.services.EncoderService;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -30,26 +32,20 @@ public class User implements UserDetails {
     @NotNull
     private String password;
 
+    @Column
+    @NotNull
+    private String role;
 
     public void setPassword(String password) {
         EncoderService encoderService = new EncoderService();
         this.password = encoderService.encode(password);
     }
 
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return new ArrayList<>();
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority(role));
+        return authorities;
     }
 
     @Override
