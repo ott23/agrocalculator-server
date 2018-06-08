@@ -74,15 +74,15 @@ public class UserController {
             user = userRepository.save(user);
             response = mapper.writeValueAsString(user);
         } catch (Exception e) {
-            e.printStackTrace();
             response = "Server error";
         }
         return response;
     }
 
     @RequestMapping("/delete/{id}")
-    public void deleteById(@PathVariable int id) {
+    public String deleteById(@PathVariable int id) {
         userRepository.deleteById(id);
+        return "Success";
     }
 
 }
