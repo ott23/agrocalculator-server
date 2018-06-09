@@ -68,21 +68,4 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     }
 
-
-    /*
-    protected void configure(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity
-                .httpBasic()
-                .and()
-                .authorizeRequests()
-                .antMatchers("/user**", "/user/**").permitAll()
-                .antMatchers("/console**", "/console/**").permitAll()
-                .antMatchers("/login**").permitAll()
-                .anyRequest().authenticated();
-        //.anyRequest().permitAll();
-        httpSecurity.csrf().disable();
-        httpSecurity.headers().frameOptions().disable();
-    }
-    */
-
 }

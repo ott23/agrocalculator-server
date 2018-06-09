@@ -13,8 +13,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class NodeServerSocketInitializer extends ChannelInitializer<SocketChannel> {
 
+    private NodeServerHandler nodeServerHandler;
+
     @Autowired
-    NodeServerHandler nodeServerHandler;
+    public NodeServerSocketInitializer(NodeServerHandler nodeServerHandler) {
+        this.nodeServerHandler = nodeServerHandler;
+    }
 
     @Override
     protected void initChannel(SocketChannel socketChannel) {

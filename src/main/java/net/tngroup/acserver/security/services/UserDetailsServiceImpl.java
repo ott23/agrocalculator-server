@@ -23,7 +23,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             user = new User();
             user.setUsername("admin");
             user.setPassword("admin");
-            user.setRole("ADMIN");
+            user.setRole("ROLE_ADMIN");
         } else {
             user = userRepository.findUserByUsername(username);
         }

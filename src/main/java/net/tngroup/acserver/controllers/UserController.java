@@ -14,8 +14,12 @@ import java.util.List;
 @RequestMapping("/user")
 public class UserController {
 
+    private UserRepository userRepository;
+
     @Autowired
-    UserRepository userRepository;
+    public UserController(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @RequestMapping
     public String getList() {
@@ -81,8 +85,16 @@ public class UserController {
 
     @RequestMapping("/delete/{id}")
     public String deleteById(@PathVariable int id) {
-        userRepository.deleteById(id);
-        return "Success";
+        String response;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            User user = userRepository.findUserById(id);
+            userRepository.deleteById(id);
+            response = mapper.writeValueAsString(user);
+        } catch (Exception e) {
+            response = "Server error";
+        }
+        return response;
     }
 
 }

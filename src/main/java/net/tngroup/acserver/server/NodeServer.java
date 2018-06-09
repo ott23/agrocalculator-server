@@ -4,7 +4,7 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import net.tngroup.acserver.services.ClientService;
+import net.tngroup.acserver.services.CalculatorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -15,13 +15,14 @@ public class NodeServer implements Runnable {
     @Value("${node.server.port:33333}")
     private int port;
 
-    @Autowired
-    NodeServerSocketInitializer nodeServerSocketInitializer;
+    private NodeServerSocketInitializer nodeServerSocketInitializer;
+    private CalculatorService calculatorService;
 
     @Autowired
-    ClientService clientService;
-
-    public NodeServer() {}
+    public NodeServer(NodeServerSocketInitializer nodeServerSocketInitializer, CalculatorService calculatorService) {
+        this.nodeServerSocketInitializer = nodeServerSocketInitializer;
+        this.calculatorService = calculatorService;
+    }
 
     @Override
     public void run() {
@@ -37,7 +38,7 @@ public class NodeServer implements Runnable {
             bootstrap.bind(port).sync().channel().closeFuture().sync();
 
             while (!Thread.currentThread().isInterrupted()) {
-                clientService.performTasks();
+                calculatorService.handleTasks();
                 Thread.sleep(1000);
             }
 

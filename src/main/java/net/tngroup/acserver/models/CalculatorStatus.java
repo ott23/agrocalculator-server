@@ -1,6 +1,7 @@
 package net.tngroup.acserver.models;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -11,7 +12,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 @Entity
 @Table
-public class ClientStatus {
+public class CalculatorStatus {
 
     @Id
     @Column
@@ -19,15 +20,16 @@ public class ClientStatus {
     private int id;
 
     @ManyToOne
-    @JoinColumn(name = "client_id", nullable = false)
-    private Client client;
+    @JoinColumn(name = "calculator_id", nullable = false)
+    @NonNull
+    private Calculator calculator;
 
     @Column
     @NonNull
     private String status;
 
     @Column
-    @NonNull
     @Temporal(TemporalType.TIMESTAMP)
+    @NonNull
     private Date dateTime;
 }

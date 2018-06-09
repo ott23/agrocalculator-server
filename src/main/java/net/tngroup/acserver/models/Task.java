@@ -1,11 +1,14 @@
 package net.tngroup.acserver.models;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import javax.persistence.*;
 
 @Data
+@RequiredArgsConstructor
 @Entity
 @Table
 public class Task {
@@ -18,15 +21,16 @@ public class Task {
     @ManyToOne
     @JoinColumn(name = "client_id", nullable = false)
     @NonNull
-    private Client client;
+    private Calculator calculator;
 
     @Column
     @NonNull
     private String type;
 
     @Column
+    @NonNull
     private String value;
 
     @Column
-    private boolean isConfirmed;
+    private boolean isConfirmed = false;
 }

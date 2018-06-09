@@ -3,7 +3,7 @@ package net.tngroup.acserver.server;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import net.tngroup.acserver.services.ClientService;
+import net.tngroup.acserver.services.CalculatorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,22 +11,26 @@ import org.springframework.stereotype.Service;
 @Sharable
 public class NodeServerHandler extends SimpleChannelInboundHandler<String> {
 
-    @Autowired
-    ClientService clientService;
+    private CalculatorService calculatorService;
 
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) {
-        clientService.newActiveClient(ctx.channel());
+    @Autowired
+    public NodeServerHandler(CalculatorService calculatorService) {
+        this.calculatorService = calculatorService;
     }
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, String msg) {
-        clientService.newMessage(ctx.channel(), msg);
+        calculatorService.readMessage(ctx.channel(), msg);
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) {
+        calculatorService.connected(ctx.channel());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        clientService.newInactiveClient(ctx.channel());
+        calculatorService.disconnected(ctx.channel());
     }
 
     @Override

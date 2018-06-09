@@ -25,15 +25,12 @@ public class User implements UserDetails {
     private int id;
 
     @Column
-    @NotNull
     private String username;
 
     @Column
-    @NotNull
     private String password;
 
     @Column
-    @NotNull
     private String role;
 
     public void setPassword(String password) {
