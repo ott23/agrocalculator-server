@@ -19,10 +19,10 @@ public class Calculator {
     private int id;
 
     @Column
-    private SocketAddress address;
+    private String name;
 
     @Column
-    private String name;
+    private SocketAddress address;
 
     @Column
     private String key;

@@ -4,50 +4,44 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import net.tngroup.acserver.services.CalculatorService;
+import net.tngroup.acserver.services.NodeService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 @Component
-public class NodeServer implements Runnable {
+public class NodeServer implements ApplicationRunner {
+
+    private Logger logger = LogManager.getFormatterLogger("ConsoleLogger");
 
     @Value("${node.server.port:33333}")
     private int port;
 
-    private NodeServerSocketInitializer nodeServerSocketInitializer;
-    private CalculatorService calculatorService;
+    private NodeService nodeService;
 
     @Autowired
-    public NodeServer(NodeServerSocketInitializer nodeServerSocketInitializer, CalculatorService calculatorService) {
-        this.nodeServerSocketInitializer = nodeServerSocketInitializer;
-        this.calculatorService = calculatorService;
+    public NodeServer(NodeService nodeService) {
+        this.nodeService = nodeService;
     }
 
     @Override
-    public void run() {
+    public void run(ApplicationArguments args) throws Exception {
+
+        logger.info("Server started");
+
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
-        try {
-            ServerBootstrap bootstrap = new ServerBootstrap()
-                    .group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
-                    .childHandler(nodeServerSocketInitializer);
+        ServerBootstrap bootstrap = new ServerBootstrap();
 
-            bootstrap.bind(port).sync().channel().closeFuture().sync();
-
-            while (!Thread.currentThread().isInterrupted()) {
-                calculatorService.handleTasks();
-                Thread.sleep(1000);
-            }
-
-        } catch (InterruptedException e) {
-            System.out.println("Server interrupted");
-        } finally {
-            bossGroup.shutdownGracefully();
-            workerGroup.shutdownGracefully();
-        }
+        bootstrap.group(bossGroup, workerGroup);
+        bootstrap.channel(NioServerSocketChannel.class);
+        bootstrap.childHandler(new NodeServerSocketInitializer(nodeService));
+        bootstrap.bind(port).sync();
     }
 
 }

@@ -1,12 +1,13 @@
 package net.tngroup.acserver.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.tngroup.acserver.models.Calculator;
+import net.tngroup.acserver.models.CalculatorStatus;
 import net.tngroup.acserver.models.Task;
 import net.tngroup.acserver.repositories.CalculatorRepository;
+import net.tngroup.acserver.repositories.CalculatorStatusRepository;
 import net.tngroup.acserver.repositories.TaskRepository;
 import net.tngroup.acserver.services.CipherService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +24,13 @@ import java.util.List;
 public class CalculatorController {
 
     private CalculatorRepository calculatorRepository;
+    private CalculatorStatusRepository calculatorStatusRepository;
     private TaskRepository taskRepository;
 
     @Autowired
-    public CalculatorController(CalculatorRepository calculatorRepository, TaskRepository taskRepository) {
+    public CalculatorController(CalculatorRepository calculatorRepository, CalculatorStatusRepository calculatorStatusRepository, TaskRepository taskRepository) {
         this.calculatorRepository = calculatorRepository;
+        this.calculatorStatusRepository = calculatorStatusRepository;
         this.taskRepository = taskRepository;
     }
 
@@ -37,6 +40,20 @@ public class CalculatorController {
         try {
             List<Calculator> calculatorList = calculatorRepository.findAll();
             return objectMapper.writeValueAsString(calculatorList);
+        } catch (JsonProcessingException e) {
+            ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
+            jsonResponse.put("response", "Server error: " + e.getMessage());
+            return jsonResponse.toString();
+        }
+    }
+
+    @RequestMapping("/status/{id}")
+    public String getStatusList(@PathVariable int id) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            Calculator calculator = calculatorRepository.findCalculatorById(id);
+            List<CalculatorStatus> calculatorStatusList = calculatorStatusRepository.findTop50ByCalculatorOrderByDateTimeDesc(calculator);
+            return objectMapper.writeValueAsString(calculatorStatusList);
         } catch (JsonProcessingException e) {
             ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
             jsonResponse.put("response", "Server error: " + e.getMessage());
@@ -62,12 +79,12 @@ public class CalculatorController {
         ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
         try {
             // Get calculator
-            Calculator calculator = calculatorRepository.findClientById(id);
+            Calculator calculator = calculatorRepository.findCalculatorById(id);
             if (calculator == null) throw new Exception("Calculator not found");
             if (!calculator.isNeedKey()) throw new Exception("Calculator does not need key");
 
             // Generate calculator
-            calculator.setKey(CipherService.generateAes256Key());
+            calculator.setKey(CipherService.generateDesKey());
             calculator.setNeedKey(false);
             calculatorRepository.save(calculator);
 

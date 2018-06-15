@@ -10,10 +10,13 @@ import java.util.List;
 @Repository
 public interface CalculatorRepository extends JpaRepository<Calculator, Integer> {
 
+    Calculator findCalculatorById(int id);
 
-    Calculator findClientById(int id);
+    Calculator findCalculatorByName(String name);
 
-    Calculator findClientByAddress(SocketAddress address);
+    Calculator findCalculatorByAddressAndArchive(SocketAddress address, boolean archive);
+
+    List<Calculator> findAllByAddressAndArchive(SocketAddress address, boolean archive);
 
     List<Calculator> findAllByActive(boolean active);
 

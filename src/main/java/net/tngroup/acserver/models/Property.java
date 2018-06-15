@@ -6,31 +6,29 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import javax.persistence.*;
-import java.util.Date;
 
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Entity
 @Table
-public class CalculatorStatus {
+public class Property {
 
     @Id
     @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne
-    @JoinColumn(name = "calculator_id", nullable = false)
+    @Column
     @NonNull
+    private String name;
+
+    @Column
+    @NonNull
+    private String value;
+
+    @ManyToOne
+    @JoinColumn
     private Calculator calculator;
 
-    @Column
-    @NonNull
-    private String status;
-
-    @Column
-    @Temporal(TemporalType.TIMESTAMP)
-    @NonNull
-    private Date dateTime;
 }
