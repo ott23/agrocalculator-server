@@ -1,20 +1,20 @@
-package net.tngroup.acserver.server;
+package net.tngroup.acserver.components.server;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
-import net.tngroup.acserver.services.NodeService;
+import net.tngroup.acserver.components.NodeComponent;
 import org.springframework.stereotype.Service;
 
 @Service
 public class NodeServerSocketInitializer extends ChannelInitializer<SocketChannel> {
 
-    private NodeService nodeService;
+    private NodeComponent nodeComponent;
 
-    public NodeServerSocketInitializer(NodeService nodeService) {
-        this.nodeService = nodeService;
+    NodeServerSocketInitializer(NodeComponent nodeComponent) {
+        this.nodeComponent = nodeComponent;
     }
 
     @Override
@@ -25,6 +25,6 @@ public class NodeServerSocketInitializer extends ChannelInitializer<SocketChanne
         pipeline.addLast(new StringDecoder());
         pipeline.addLast(new StringEncoder());
 
-        pipeline.addLast(new NodeServerHandler(nodeService));
+        pipeline.addLast(new NodeServerHandler(nodeComponent));
     }
 }

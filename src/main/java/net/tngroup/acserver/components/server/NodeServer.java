@@ -1,38 +1,28 @@
-package net.tngroup.acserver.server;
+package net.tngroup.acserver.components.server;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import net.tngroup.acserver.services.NodeService;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import net.tngroup.acserver.components.NodeComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 @Component
-public class NodeServer implements ApplicationRunner {
-
-    private Logger logger = LogManager.getFormatterLogger("ConsoleLogger");
+public class NodeServer {
 
     @Value("${node.server.port:33333}")
     private int port;
 
-    private NodeService nodeService;
+    private NodeComponent nodeComponent;
 
     @Autowired
-    public NodeServer(NodeService nodeService) {
-        this.nodeService = nodeService;
+    public NodeServer(NodeComponent nodeComponent) {
+        this.nodeComponent = nodeComponent;
     }
 
-    @Override
-    public void run(ApplicationArguments args) throws Exception {
-
-        logger.info("Server started");
-
+    public void createBootstrap() throws Exception {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -40,7 +30,7 @@ public class NodeServer implements ApplicationRunner {
 
         bootstrap.group(bossGroup, workerGroup);
         bootstrap.channel(NioServerSocketChannel.class);
-        bootstrap.childHandler(new NodeServerSocketInitializer(nodeService));
+        bootstrap.childHandler(new NodeServerSocketInitializer(nodeComponent));
         bootstrap.bind(port).sync();
     }
 

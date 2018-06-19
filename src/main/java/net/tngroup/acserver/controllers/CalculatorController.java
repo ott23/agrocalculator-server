@@ -3,13 +3,13 @@ package net.tngroup.acserver.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import net.tngroup.acserver.components.CipherComponent;
 import net.tngroup.acserver.models.Calculator;
 import net.tngroup.acserver.models.CalculatorStatus;
 import net.tngroup.acserver.models.Task;
-import net.tngroup.acserver.repositories.CalculatorRepository;
-import net.tngroup.acserver.repositories.CalculatorStatusRepository;
-import net.tngroup.acserver.repositories.TaskRepository;
-import net.tngroup.acserver.services.CipherService;
+import net.tngroup.acserver.services.CalculatorService;
+import net.tngroup.acserver.services.CalculatorStatusService;
+import net.tngroup.acserver.services.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,25 +23,27 @@ import java.util.List;
 @RequestMapping("/calculator")
 public class CalculatorController {
 
-    private CalculatorRepository calculatorRepository;
-    private CalculatorStatusRepository calculatorStatusRepository;
-    private TaskRepository taskRepository;
+    private CalculatorService calculatorService;
+    private CalculatorStatusService calculatorStatusService;
+    private TaskService taskService;
 
     @Autowired
-    public CalculatorController(CalculatorRepository calculatorRepository, CalculatorStatusRepository calculatorStatusRepository, TaskRepository taskRepository) {
-        this.calculatorRepository = calculatorRepository;
-        this.calculatorStatusRepository = calculatorStatusRepository;
-        this.taskRepository = taskRepository;
+    public CalculatorController(CalculatorService calculatorService,
+                                CalculatorStatusService calculatorStatusService,
+                                TaskService taskService) {
+        this.calculatorService = calculatorService;
+        this.calculatorStatusService = calculatorStatusService;
+        this.taskService = taskService;
     }
 
     @RequestMapping
     public String getList() {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            List<Calculator> calculatorList = calculatorRepository.findAll();
+            List<Calculator> calculatorList = calculatorService.getAll();
             return objectMapper.writeValueAsString(calculatorList);
         } catch (JsonProcessingException e) {
-            ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
+            ObjectNode jsonResponse = objectMapper.createObjectNode();
             jsonResponse.put("response", "Server error: " + e.getMessage());
             return jsonResponse.toString();
         }
@@ -51,11 +53,10 @@ public class CalculatorController {
     public String getStatusList(@PathVariable int id) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            Calculator calculator = calculatorRepository.findCalculatorById(id);
-            List<CalculatorStatus> calculatorStatusList = calculatorStatusRepository.findTop50ByCalculatorOrderByDateTimeDesc(calculator);
+            List<CalculatorStatus> calculatorStatusList = calculatorStatusService.getByCalculatorId(id);
             return objectMapper.writeValueAsString(calculatorStatusList);
-        } catch (JsonProcessingException e) {
-            ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
+        } catch (Exception e) {
+            ObjectNode jsonResponse = objectMapper.createObjectNode();
             jsonResponse.put("response", "Server error: " + e.getMessage());
             return jsonResponse.toString();
         }
@@ -65,10 +66,10 @@ public class CalculatorController {
     public String getListNeedKey() {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            List<Calculator> calculatorList = calculatorRepository.findAllByNeedKey(true);
+            List<Calculator> calculatorList = calculatorService.getAllByKey(null);
             return objectMapper.writeValueAsString(calculatorList);
         } catch (Exception e) {
-            ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
+            ObjectNode jsonResponse = objectMapper.createObjectNode();
             jsonResponse.put("response", "Server error: " + e.getMessage());
             return jsonResponse.toString();
         }
@@ -78,20 +79,23 @@ public class CalculatorController {
     public String sendNewKeyById(@PathVariable int id) {
         ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
         try {
-            // Get calculator
-            Calculator calculator = calculatorRepository.findCalculatorById(id);
-            if (calculator == null) throw new Exception("Calculator not found");
-            if (!calculator.isNeedKey()) throw new Exception("Calculator does not need key");
+            calculatorService.updateKeyById(id, CipherComponent.generateDesKey());
+            Calculator calculator = calculatorService.getById(id);
+            taskService.add(new Task(calculator, "key", calculator.getKey()));
+            jsonResponse.put("response", "Success");
+        } catch (Exception e) {
+            jsonResponse.put("response", "Server error: " + e.getMessage());
+        }
+        return jsonResponse.toString();
+    }
 
-            // Generate calculator
-            calculator.setKey(CipherService.generateDesKey());
-            calculator.setNeedKey(false);
-            calculatorRepository.save(calculator);
-
-            // Make a task
-            Task task = new Task(calculator, "key", calculator.getKey());
-            taskRepository.save(task);
-
+    @RequestMapping("/delete/{id}")
+    public String deleteById(@PathVariable int id) {
+        ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
+        try {
+            calculatorService.updateArchiveById(id, true);
+            Calculator calculator = calculatorService.getById(id);
+            taskService.add(new Task(calculator, "command", "destroy"));
             jsonResponse.put("response", "Success");
         } catch (Exception e) {
             jsonResponse.put("response", "Server error: " + e.getMessage());

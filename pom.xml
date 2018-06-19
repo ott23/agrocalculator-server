@@ -23,7 +23,8 @@
 
         <lombok.version>1.16.20</lombok.version>
         <jackson.version>2.9.5</jackson.version>
-        <hibernate.version>5.2.13.Final</hibernate.version>
+        <hibernate-core.version>5.3.1.Final</hibernate-core.version>
+        <hibernate-em.version>5.3.1.Final</hibernate-em.version>
         <h2.version>1.4.197</h2.version>
         <jwt.version>0.7.0</jwt.version>
         <netty.version>4.1.25.Final</netty.version>
@@ -92,8 +93,14 @@
         <!-- Hibernate -->
         <dependency>
             <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate-core.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
-            <version>${hibernate.version}</version>
+            <version>${hibernate-em.version}</version>
         </dependency>
 
         <!-- H2 -->

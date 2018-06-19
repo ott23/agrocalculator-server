@@ -3,8 +3,8 @@ package net.tngroup.acserver.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import net.tngroup.acserver.models.Property;
-import net.tngroup.acserver.repositories.PropertyRepository;
+import net.tngroup.acserver.models.Setting;
+import net.tngroup.acserver.services.SettingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,21 +15,22 @@ import java.util.List;
 @CrossOrigin
 @RestController
 @RequestMapping("/setting")
-public class PropertyController {
+public class SettingController {
 
-    private PropertyRepository propertyRepository;
+    private SettingService settingService;
 
     @Autowired
-    public PropertyController(PropertyRepository propertyRepository) {
-        this.propertyRepository = propertyRepository;
+    public SettingController(
+            SettingService settingService) {
+        this.settingService = settingService;
     }
 
     @RequestMapping
     public String getList() {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            List<Property> propertyList = propertyRepository.findAll();
-            return objectMapper.writeValueAsString(propertyList);
+            List<Setting> settingList = settingService.getAll();
+            return objectMapper.writeValueAsString(settingList);
         } catch (JsonProcessingException e) {
             ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
             jsonResponse.put("response", "Server error: " + e.getMessage());

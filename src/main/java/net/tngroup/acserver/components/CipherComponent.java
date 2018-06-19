@@ -1,6 +1,6 @@
-package net.tngroup.acserver.services;
+package net.tngroup.acserver.components;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
@@ -12,8 +12,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
-@Service
-public class CipherService {
+@Component
+public class CipherComponent {
 
     public static String generateDesKey() throws Exception {
         try {
@@ -26,21 +26,22 @@ public class CipherService {
         }
     }
 
-    public static String des(String input, String keyString, boolean encode) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    static String encodeDes(String input, String keyString) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         Cipher cipher = Cipher.getInstance("DES");
-        if (encode) {
             byte[] decodedKey = Base64.getDecoder().decode(keyString);
             SecretKey key = new SecretKeySpec(decodedKey, 0, decodedKey.length, "DES");
             cipher.init(Cipher.ENCRYPT_MODE, key);
             byte[] encValue = cipher.doFinal(input.getBytes(StandardCharsets.UTF_8));
             return new BASE64Encoder().encode(encValue);
-        } else {
-            byte[] decodedKey = Base64.getDecoder().decode(keyString);
-            SecretKey key = new SecretKeySpec(decodedKey, 0, decodedKey.length, "DES");
-            cipher.init(Cipher.DECRYPT_MODE, key);
-            byte[] decodedValue = new BASE64Decoder().decodeBuffer(input);
-            byte[] decValue = cipher.doFinal(decodedValue);
-            return new String(decValue, StandardCharsets.UTF_8);
-        }
+    }
+
+    static String decodeDes(String input, String keyString) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        Cipher cipher = Cipher.getInstance("DES");
+        byte[] decodedKey = Base64.getDecoder().decode(keyString);
+        SecretKey key = new SecretKeySpec(decodedKey, 0, decodedKey.length, "DES");
+        cipher.init(Cipher.DECRYPT_MODE, key);
+        byte[] decodedValue = new BASE64Decoder().decodeBuffer(input);
+        byte[] decValue = cipher.doFinal(decodedValue);
+        return new String(decValue, StandardCharsets.UTF_8);
     }
 }

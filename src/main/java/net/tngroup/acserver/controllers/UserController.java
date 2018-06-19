@@ -2,8 +2,9 @@ package net.tngroup.acserver.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.tngroup.acserver.models.User;
-import net.tngroup.acserver.repositories.UserRepository;
+import net.tngroup.acserver.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,87 +15,84 @@ import java.util.List;
 @RequestMapping("/user")
 public class UserController {
 
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Autowired
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserController(
+            UserService userService) {
+        this.userService = userService;
     }
+
 
     @RequestMapping
     public String getList() {
-        String response;
+        ObjectMapper objectMapper = new ObjectMapper();
         try {
-            List<User> userList = userRepository.findAll();
-            ObjectMapper mapper = new ObjectMapper();
-            response = mapper.writeValueAsString(userList);
+            List<User> userList = userService.getAll();
+            return objectMapper.writeValueAsString(userList);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            response = "Server error";
+            ObjectNode jsonResponse = objectMapper.createObjectNode();
+            jsonResponse.put("response", "Server error: " + e.getMessage());
+            return jsonResponse.toString();
         }
-        return response;
     }
 
     @RequestMapping("/getById/{id}")
     public String getById(@PathVariable int id) {
-        String response;
+        ObjectMapper objectMapper = new ObjectMapper();
         try {
-            if (userRepository.findById(id).isPresent()) {
-                ObjectMapper mapper = new ObjectMapper();
-                User user = userRepository.findById(id).get();
-                response = mapper.writeValueAsString(user);
-            } else {
-                throw new Exception("User not found");
-            }
+            // Get user
+            User user = userService.getById(id);
+            if (user == null) throw new Exception("User not found");
+            // Form json
+            return objectMapper.writeValueAsString(user);
         } catch (Exception e) {
-            response = "Server error";
+            ObjectNode jsonResponse = objectMapper.createObjectNode();
+            jsonResponse.put("response", "Server error: " + e.getMessage());
+            return jsonResponse.toString();
         }
-        return response;
     }
 
     @RequestMapping("/getByUsername/{username}")
     public String getByUsername(@PathVariable String username) {
-        String response;
+        ObjectMapper objectMapper = new ObjectMapper();
         try {
-            User user = userRepository.findUserByUsername(username);
-            if (user != null) {
-                ObjectMapper mapper = new ObjectMapper();
-                response = mapper.writeValueAsString(user);
-            } else {
-                throw new Exception("User not found");
-            }
+            // Get user
+            User user = userService.getByUsername(username);
+            if (user == null) throw new Exception("User not found");
+            // Form json
+            return objectMapper.writeValueAsString(user);
         } catch (Exception e) {
-            response = "Server error";
+            ObjectNode jsonResponse = objectMapper.createObjectNode();
+            jsonResponse.put("response", "Server error: " + e.getMessage());
+            return jsonResponse.toString();
         }
-        return response;
     }
 
     @RequestMapping("/add")
     public String add(@RequestBody String jsonRequest) {
-        String response;
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode jsonResponse = objectMapper.createObjectNode();
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            User user = mapper.readValue(jsonRequest, User.class);
-            user = userRepository.save(user);
-            response = mapper.writeValueAsString(user);
+            User user = objectMapper.readValue(jsonRequest, User.class);
+            userService.add(user);
+            jsonResponse.put("response", "Success");
         } catch (Exception e) {
-            response = "Server error";
+            jsonResponse.put("response", "Server error: " + e.getMessage());
         }
-        return response;
+        return jsonResponse.toString();
     }
 
     @RequestMapping("/delete/{id}")
     public String deleteById(@PathVariable int id) {
-        String response;
+        ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            User user = userRepository.findUserById(id);
-            userRepository.deleteById(id);
-            response = mapper.writeValueAsString(user);
+            userService.deleteById(id);
+            jsonResponse.put("response", "Success");
         } catch (Exception e) {
-            response = "Server error";
+            jsonResponse.put("response", "Server error: " + e.getMessage());
         }
-        return response;
+        return jsonResponse.toString();
     }
 
 }

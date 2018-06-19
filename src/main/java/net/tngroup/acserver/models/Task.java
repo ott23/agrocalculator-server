@@ -1,9 +1,6 @@
 package net.tngroup.acserver.models;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -11,27 +8,22 @@ import javax.persistence.*;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Entity
-@Table
 public class Task {
 
     @Id
-    @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne
-    @JoinColumn(name = "client_id", nullable = false)
     @NonNull
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "calculator_id", nullable = false)
     private Calculator calculator;
 
-    @Column
     @NonNull
     private String type;
 
-    @Column
     @NonNull
     private String value;
 
-    @Column
-    private boolean isConfirmed = false;
+    private boolean confirmed = false;
 }

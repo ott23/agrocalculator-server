@@ -1,9 +1,9 @@
-package net.tngroup.acserver.security;
+package net.tngroup.acserver.config.security;
 
-import net.tngroup.acserver.security.filters.JwtAuthenticationFilter;
-import net.tngroup.acserver.security.filters.JwtLoginFilter;
-import net.tngroup.acserver.security.services.EncoderService;
-import net.tngroup.acserver.security.services.UserDetailsServiceImpl;
+import net.tngroup.acserver.config.security.filters.JwtAuthenticationFilter;
+import net.tngroup.acserver.config.security.filters.JwtLoginFilter;
+import net.tngroup.acserver.config.security.services.EncoderService;
+import net.tngroup.acserver.config.security.services.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package net.tngroup.acserver.services;
+package net.tngroup.acserver.components;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -10,10 +10,9 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 import net.tngroup.acserver.models.Calculator;
 import net.tngroup.acserver.models.CalculatorStatus;
 import net.tngroup.acserver.models.Message;
-import net.tngroup.acserver.models.Task;
-import net.tngroup.acserver.repositories.CalculatorRepository;
-import net.tngroup.acserver.repositories.CalculatorStatusRepository;
-import net.tngroup.acserver.repositories.TaskRepository;
+import net.tngroup.acserver.services.CalculatorService;
+import net.tngroup.acserver.services.CalculatorStatusService;
+import net.tngroup.acserver.services.TaskService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,22 +32,24 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-public class NodeService {
+public class NodeComponent {
 
     private Logger logger = LogManager.getFormatterLogger("ConsoleLogger");
 
-    private CalculatorRepository calculatorRepository;
-    private CalculatorStatusRepository calculatorStatusRepository;
-    private TaskRepository taskRepository;
+    private CalculatorService calculatorService;
+    private CalculatorStatusService calculatorStatusService;
+    private TaskService taskService;
 
     private ChannelGroup channels;
     private HashMap<SocketAddress, ChannelId> channelMap;
 
     @Autowired
-    public NodeService(CalculatorRepository calculatorRepository, CalculatorStatusRepository calculatorStatusRepository, TaskRepository taskRepository) {
-        this.calculatorRepository = calculatorRepository;
-        this.calculatorStatusRepository = calculatorStatusRepository;
-        this.taskRepository = taskRepository;
+    public NodeComponent(CalculatorService calculatorService,
+                         CalculatorStatusService calculatorStatusService,
+                         TaskService taskService) {
+        this.calculatorService = calculatorService;
+        this.calculatorStatusService = calculatorStatusService;
+        this.taskService = taskService;
 
         setAllNotActiveOnInit();
 
@@ -60,30 +61,25 @@ public class NodeService {
     Make all calculator not active on init
      */
     private void setAllNotActiveOnInit() {
-        calculatorRepository.findAllByActive(true).forEach((calculator -> {
-            calculator.setActive(false);
-            calculatorRepository.save(calculator);
-        }));
+        calculatorService.updateAllActive(false);
     }
 
     /*
     Handler of tasks
      */
     public void handleTasks() {
-        taskRepository.findAll().forEach((task) -> {
-            Calculator calculator = task.getCalculator();
+        taskService.getAllByConfirmed(false).forEach(t -> {
+            Calculator calculator = t.getCalculator();
             if (channelMap.containsKey(calculator.getAddress())) {
                 Channel channel = channels.find(channelMap.get(calculator.getAddress()));
 
-                logger.info("Sending a '%s' message to '%s'", task.getType(), channel.remoteAddress().toString());
+                logger.info("Sending a '%s' - '%s' to '%s'", t.getType(), t.getValue(), channel.remoteAddress().toString());
 
-                String json = new Message(task).formJson();
+                String json = new Message(t).formJson();
 
                 // Select message type by type
-                if (task.getType().equals("key")) sendMessage(channel, json, null);
+                if (t.getType().equals("key")) sendMessage(channel, json, null);
                 else sendMessage(channel, json, calculator.getKey());
-
-                taskRepository.delete(task);
             }
         });
     }
@@ -110,14 +106,12 @@ public class NodeService {
         channelMap.remove(channel.remoteAddress());
 
         // Set status "Not active" if calculator exists
-        Calculator calculator = calculatorRepository.findCalculatorByAddressAndArchive(channel.remoteAddress(), false);
+        Calculator calculator = calculatorService.getByAddressAndActive(channel.remoteAddress(), false);
         if (calculator != null) {
-            calculator.setActive(false);
-            calculatorRepository.save(calculator);
-
-            CalculatorStatus calculatorStatus = new CalculatorStatus(calculator, "DISCONNECTED", new Date());
-            calculatorStatusRepository.save(calculatorStatus);
+            calculatorService.updateActiveById(calculator.getId(), false);
+            calculatorStatusService.add(new CalculatorStatus(calculator, "DISCONNECTED", new Date()));
         }
+
     }
 
     /*
@@ -126,8 +120,9 @@ public class NodeService {
     private void sendMessage(Channel channel, String msg, String keyString) {
         try {
             // Encode message if key exists
-            if (keyString != null) msg = CipherService.des(msg, keyString, true);
-            msg = Base64.getEncoder().encodeToString(msg.getBytes());
+            if (keyString != null) msg = CipherComponent.encodeDes(msg, keyString);
+            else msg = Base64.getEncoder().encodeToString(msg.getBytes());
+
             String result_msg = new StringBuilder().append("-").append(msg.length()).append("-").append(msg).toString();
 
             // Sending message
@@ -178,12 +173,11 @@ public class NodeService {
             switch (message.getType()) {
                 case "status":
                     calculator = checkCalculator(message.getValue(), address);
-                    calculatorStatusRepository.save(new CalculatorStatus(calculator, "CONNECTED", new Date()));
+                    calculatorStatusService.add(new CalculatorStatus(calculator, "CONNECTED", new Date()));
                     return true;
                 case "key request":
                     calculator = checkCalculator(message.getValue(), address);
-                    calculatorStatusRepository.save(new CalculatorStatus(calculator, "CONNECTED", new Date()));
-                    genKey(calculator);
+                    genKey(calculator.getId());
                     return true;
                 default:
                     return false;
@@ -199,12 +193,9 @@ public class NodeService {
     private Calculator checkCalculator(String name, SocketAddress address) {
 
         // Make all calculator with the same address archived
-        calculatorRepository.findAllByAddressAndArchive(address, false).forEach(c -> {
-            c.setArchive(true);
-            calculatorRepository.save(c);
-        });
+        calculatorService.updateAllArchiveByAddress(address, true);
 
-        Calculator calculator = calculatorRepository.findCalculatorByName(name);
+        Calculator calculator =calculatorService.getByName(name);
 
         if (calculator != null) {
             if (!calculator.getAddress().equals(address)) calculator.setAddress(address);
@@ -216,10 +207,10 @@ public class NodeService {
 
         calculator.setActive(true);
         calculator.setArchive(false);
-        calculatorRepository.save(calculator);
+
+        calculatorService.addOrUpdate(calculator);
 
         return calculator;
-
     }
 
     /*
@@ -227,11 +218,11 @@ public class NodeService {
      */
     private void decMessage(SocketAddress address, String msg) throws Exception {
         try {
-            Calculator calculator = calculatorRepository.findCalculatorByAddressAndArchive(address, false);
+            Calculator calculator = calculatorService.getByAddressAndActive(address, true);
             if (calculator == null) throw new Exception("Unexpected error: calculator not found");
 
             // Decoding
-            msg = CipherService.des(msg, calculator.getKey(), false);
+            msg = CipherComponent.decodeDes(msg, calculator.getKey());
             Message message = new Message(msg);
 
             logger.info("Message from address '%s' received: %s", calculator.getAddress().toString(), message.getType());
@@ -262,14 +253,12 @@ public class NodeService {
     Confirmation handler
      */
     private void confirmationHandler(int id) {
-        if (taskRepository.findById(id).isPresent()) {
-            Task task = taskRepository.findById(id).get();
-            task.setConfirmed(true);
-            taskRepository.save(task);
-        }
+        taskService.updateConfirmedById(id, true);
     }
 
     private void sendWrongMessage(Channel channel) {
+        logger.info("Sending a wrong message to '%s'", channel.remoteAddress().toString());
+
         ObjectNode jsonOutput = new ObjectMapper().createObjectNode();
         jsonOutput.put("type", "wrong message");
         jsonOutput.put("value", "");
@@ -277,10 +266,8 @@ public class NodeService {
         sendMessage(channel, jsonOutput.toString(), null);
     }
 
-    private void genKey(Calculator calculator) {
-        calculator.setNeedKey(true);
-        calculator.setKey(null);
-        calculatorRepository.save(calculator);
+    private void genKey(int id) {
+        calculatorService.updateKeyById(id,null);
     }
 
 }

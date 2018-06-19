@@ -1,6 +1,6 @@
-package net.tngroup.acserver.security.filters;
+package net.tngroup.acserver.config.security.filters;
 
-import net.tngroup.acserver.security.services.TokenAuthenticationService;
+import net.tngroup.acserver.config.security.services.TokenAuthenticationService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;

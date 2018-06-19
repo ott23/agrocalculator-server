@@ -1,7 +1,7 @@
-package net.tngroup.acserver.security.services;
+package net.tngroup.acserver.config.security.services;
 
 import net.tngroup.acserver.models.User;
-import net.tngroup.acserver.repositories.UserRepository;
+import net.tngroup.acserver.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -11,8 +11,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
+    private UserService userService;
+
     @Autowired
-    private UserRepository userRepository;
+    public UserDetailsServiceImpl(UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) {
@@ -25,7 +29,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             user.setPassword("admin");
             user.setRole("ROLE_ADMIN");
         } else {
-            user = userRepository.findUserByUsername(username);
+            user = userService.getByUsername(username);
         }
 
         if (user == null) {

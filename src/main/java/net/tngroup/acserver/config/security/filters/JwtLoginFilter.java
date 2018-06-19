@@ -1,8 +1,8 @@
-package net.tngroup.acserver.security.filters;
+package net.tngroup.acserver.config.security.filters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.tngroup.acserver.security.models.Credentials;
-import net.tngroup.acserver.security.services.TokenAuthenticationService;
+import net.tngroup.acserver.config.security.models.Credentials;
+import net.tngroup.acserver.config.security.services.TokenAuthenticationService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;

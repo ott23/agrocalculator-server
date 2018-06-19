@@ -1,14 +1,14 @@
 package net.tngroup.acserver.repositories;
 
-import net.tngroup.acserver.models.User;
+import net.tngroup.acserver.models.Setting;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Integer> {
+public interface SettingRepository extends JpaRepository<Setting, Integer> {
 
-    Optional<User> findByUsername(String username);
+    Optional<Setting> findByNameAndCalculatorId(String name, Integer id);
 
 }
