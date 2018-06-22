@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.tngroup.acserver.models.Setting;
-import net.tngroup.acserver.services.CalculatorService;
 import net.tngroup.acserver.services.SettingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,14 +18,11 @@ import java.util.List;
 public class SettingController {
 
     private SettingService settingService;
-    private CalculatorService calculatorService;
 
     @Autowired
     public SettingController(
-            SettingService settingService,
-            CalculatorService calculatorService) {
+            SettingService settingService) {
         this.settingService = settingService;
-        this.calculatorService = calculatorService;
     }
 
     @RequestMapping

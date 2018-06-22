@@ -1,20 +1,24 @@
-package net.tngroup.acserver.components.server;
+package net.tngroup.acserver.server;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
-import net.tngroup.acserver.components.NodeComponent;
+import net.tngroup.acserver.server.components.InputMessageComponent;
+import net.tngroup.acserver.server.components.StatusComponent;
 import org.springframework.stereotype.Service;
 
 @Service
 public class NodeServerSocketInitializer extends ChannelInitializer<SocketChannel> {
 
-    private NodeComponent nodeComponent;
+    private StatusComponent statusComponent;
+    private InputMessageComponent inputMessageComponent;
 
-    NodeServerSocketInitializer(NodeComponent nodeComponent) {
-        this.nodeComponent = nodeComponent;
+    NodeServerSocketInitializer(StatusComponent statusComponent,
+                                InputMessageComponent inputMessageComponent) {
+        this.statusComponent = statusComponent;
+        this.inputMessageComponent = inputMessageComponent;
     }
 
     @Override
@@ -25,6 +29,6 @@ public class NodeServerSocketInitializer extends ChannelInitializer<SocketChanne
         pipeline.addLast(new StringDecoder());
         pipeline.addLast(new StringEncoder());
 
-        pipeline.addLast(new NodeServerHandler(nodeComponent));
+        pipeline.addLast(new NodeServerHandler(statusComponent, inputMessageComponent));
     }
 }

@@ -1,10 +1,11 @@
-package net.tngroup.acserver.components.server;
+package net.tngroup.acserver.server;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import net.tngroup.acserver.components.NodeComponent;
+import net.tngroup.acserver.server.components.InputMessageComponent;
+import net.tngroup.acserver.server.components.StatusComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -15,11 +16,14 @@ public class NodeServer {
     @Value("${node.server.port:33333}")
     private int port;
 
-    private NodeComponent nodeComponent;
+    private StatusComponent statusComponent;
+    private InputMessageComponent inputMessageComponent;
 
     @Autowired
-    public NodeServer(NodeComponent nodeComponent) {
-        this.nodeComponent = nodeComponent;
+    public NodeServer(StatusComponent statusComponent,
+                      InputMessageComponent inputMessageComponent) {
+        this.statusComponent = statusComponent;
+        this.inputMessageComponent = inputMessageComponent;
     }
 
     public void createBootstrap() throws Exception {
@@ -30,7 +34,7 @@ public class NodeServer {
 
         bootstrap.group(bossGroup, workerGroup);
         bootstrap.channel(NioServerSocketChannel.class);
-        bootstrap.childHandler(new NodeServerSocketInitializer(nodeComponent));
+        bootstrap.childHandler(new NodeServerSocketInitializer(statusComponent, inputMessageComponent));
         bootstrap.bind(port).sync();
     }
 

@@ -26,7 +26,7 @@ public class CipherComponent {
         }
     }
 
-    static String encodeDes(String input, String keyString) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public static String encodeDes(String input, String keyString) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         Cipher cipher = Cipher.getInstance("DES");
             byte[] decodedKey = Base64.getDecoder().decode(keyString);
             SecretKey key = new SecretKeySpec(decodedKey, 0, decodedKey.length, "DES");
@@ -35,7 +35,7 @@ public class CipherComponent {
             return new BASE64Encoder().encode(encValue);
     }
 
-    static String decodeDes(String input, String keyString) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public static String decodeDes(String input, String keyString) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         Cipher cipher = Cipher.getInstance("DES");
         byte[] decodedKey = Base64.getDecoder().decode(keyString);
         SecretKey key = new SecretKeySpec(decodedKey, 0, decodedKey.length, "DES");

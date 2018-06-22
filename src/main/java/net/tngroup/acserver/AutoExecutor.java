@@ -1,7 +1,7 @@
 package net.tngroup.acserver;
 
-import net.tngroup.acserver.components.NodeComponent;
-import net.tngroup.acserver.components.server.NodeServer;
+import net.tngroup.acserver.components.TaskComponent;
+import net.tngroup.acserver.server.NodeServer;
 import net.tngroup.acserver.models.Setting;
 import net.tngroup.acserver.services.SettingService;
 import org.apache.logging.log4j.LogManager;
@@ -20,29 +20,30 @@ public class AutoExecutor implements ApplicationRunner {
     private Logger logger = LogManager.getFormatterLogger("ConsoleLogger");
 
     private NodeServer nodeServer;
-    private NodeComponent nodeComponent;
     private Environment env;
     private SettingService settingService;
+    private TaskComponent taskComponent;
 
     @Autowired
     public AutoExecutor(NodeServer nodeServer,
-                        NodeComponent nodeComponent,
                         Environment env,
-                        SettingService settingService) {
+                        SettingService settingService,
+                        TaskComponent taskComponent) {
         this.nodeServer = nodeServer;
-        this.nodeComponent = nodeComponent;
         this.env = env;
         this.settingService = settingService;
+        this.taskComponent = taskComponent;
     }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
 
         loadProperties();
-        taskHandlerInit();
 
         nodeServer.createBootstrap();
         logger.info("Server started");
+
+        taskComponent.init();
 
     }
 
@@ -66,16 +67,5 @@ public class AutoExecutor implements ApplicationRunner {
         });
     }
 
-    private void taskHandlerInit() {
-        new Thread(() -> {
-            try {
-                while (!Thread.currentThread().isInterrupted()) {
-                    nodeComponent.handleTasks();
-                    Thread.sleep(1000);
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }).start();
-    }
+
 }
