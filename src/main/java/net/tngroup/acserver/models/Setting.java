@@ -20,7 +20,7 @@ public class Setting {
     @NonNull
     private String value;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "calculator_id")
     private Calculator calculator;
 

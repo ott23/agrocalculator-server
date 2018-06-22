@@ -8,8 +8,14 @@ public interface SettingService {
 
     List<Setting> getAll();
 
+    List<Setting> getAllByCalculatorId(int id);
+
+    Setting getById(int id);
+
     Setting getByNameAndCalculatorId(String name, Integer id);
 
-    void add(Setting setting);
+    void addOrUpdate(Setting setting);
+
+    void deleteById(int id);
 
 }

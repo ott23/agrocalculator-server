@@ -1,7 +1,7 @@
 package net.tngroup.acserver.components;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelId;
 import io.netty.channel.group.ChannelGroup;
@@ -10,8 +10,10 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 import net.tngroup.acserver.models.Calculator;
 import net.tngroup.acserver.models.CalculatorStatus;
 import net.tngroup.acserver.models.Message;
+import net.tngroup.acserver.models.Setting;
 import net.tngroup.acserver.services.CalculatorService;
 import net.tngroup.acserver.services.CalculatorStatusService;
+import net.tngroup.acserver.services.SettingService;
 import net.tngroup.acserver.services.TaskService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,9 +27,7 @@ import java.io.IOException;
 import java.net.SocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,6 +39,7 @@ public class NodeComponent {
     private CalculatorService calculatorService;
     private CalculatorStatusService calculatorStatusService;
     private TaskService taskService;
+    private SettingService settingService;
 
     private ChannelGroup channels;
     private HashMap<SocketAddress, ChannelId> channelMap;
@@ -46,22 +47,18 @@ public class NodeComponent {
     @Autowired
     public NodeComponent(CalculatorService calculatorService,
                          CalculatorStatusService calculatorStatusService,
-                         TaskService taskService) {
+                         TaskService taskService,
+                         SettingService settingService) {
         this.calculatorService = calculatorService;
         this.calculatorStatusService = calculatorStatusService;
         this.taskService = taskService;
+        this.settingService = settingService;
 
-        setAllNotActiveOnInit();
+        // Make all calculator not active on init
+        calculatorService.updateAllActive(false);
 
         channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
         channelMap = new HashMap<>();
-    }
-
-    /*
-    Make all calculator not active on init
-     */
-    private void setAllNotActiveOnInit() {
-        calculatorService.updateAllActive(false);
     }
 
     /*
@@ -73,13 +70,9 @@ public class NodeComponent {
             if (channelMap.containsKey(calculator.getAddress())) {
                 Channel channel = channels.find(channelMap.get(calculator.getAddress()));
 
-                logger.info("Sending a '%s' - '%s' to '%s'", t.getType(), t.getValue(), channel.remoteAddress().toString());
-
-                String json = new Message(t).formJson();
-
                 // Select message type by type
-                if (t.getType().equals("key")) sendMessage(channel, json, null);
-                else sendMessage(channel, json, calculator.getKey());
+                if (t.getType().equals("key")) sendMessage(new Message(t), channel, null);
+                else sendMessage(new Message(t), channel, calculator.getKey());
             }
         });
     }
@@ -88,7 +81,7 @@ public class NodeComponent {
     Event of connection
      */
     public void connected(Channel channel) {
-        logger.info("Client with address '%s' connected", channel.remoteAddress().toString());
+        logger.info("Client with address '%s': connected", channel.remoteAddress().toString());
 
         // Add to channel arrays
         channels.add(channel);
@@ -99,14 +92,14 @@ public class NodeComponent {
     Event of disconnection
      */
     public void disconnected(Channel channel) {
-        logger.info("Client with address '%s' disconnected", channel.remoteAddress().toString());
+        logger.info("Client with address '%s': disconnected", channel.remoteAddress().toString());
 
         // Remove from channel arrays
         channels.remove(channel);
         channelMap.remove(channel.remoteAddress());
 
         // Set status "Not active" if calculator exists
-        Calculator calculator = calculatorService.getByAddressAndActive(channel.remoteAddress(), false);
+        Calculator calculator = calculatorService.getByAddressAndActive(channel.remoteAddress(), true);
         if (calculator != null) {
             calculatorService.updateActiveById(calculator.getId(), false);
             calculatorStatusService.add(new CalculatorStatus(calculator, "DISCONNECTED", new Date()));
@@ -117,26 +110,45 @@ public class NodeComponent {
     /*
     Handler of message sending
      */
-    private void sendMessage(Channel channel, String msg, String keyString) {
+    private void sendMessage(Message message, Channel channel, String key) {
         try {
-            // Encode message if key exists
-            if (keyString != null) msg = CipherComponent.encodeDes(msg, keyString);
+            logger.info("Sending a '%s' message to '%s'", message.getType(), channel.remoteAddress().toString());
+
+            String msg = message.formJson();
+            if (key != null) msg = CipherComponent.encodeDes(msg, key);
             else msg = Base64.getEncoder().encodeToString(msg.getBytes());
+            String result_msg = "-" + msg.length() + "-" + msg;
 
-            String result_msg = new StringBuilder().append("-").append(msg.length()).append("-").append(msg).toString();
-
-            // Sending message
             channel.writeAndFlush(result_msg);
         } catch (Exception e) {
             logger.error("Error during message sending: %s", e.getMessage());
         }
     }
 
+    private void sendMessageWrongMessage(Channel channel) {
+        sendMessage(new Message("wrong message", "wrong message", null), channel, null);
+    }
+
+    private void sendMessageProperties(Channel channel, Calculator calculator) {
+        try {
+            List<Setting> settingList = settingService.getAllByCalculatorId(calculator.getId());
+            String json = new ObjectMapper().writeValueAsString(settingList);
+            sendMessage(new Message("properties", json, null), channel, calculator.getKey());
+        } catch (JsonProcessingException e) {
+            logger.error("Error during json forming: %s", e.getMessage());
+        }
+
+    }
+
     /*
     Event of new message
      */
+    private Map<Channel, String> messageCacheMap = new HashMap<>();
+
     public void readMessage(Channel channel, String msg) {
         try {
+            if (messageCacheMap.containsKey(channel)) msg = messageCacheMap.remove(channel) + msg;
+
             Pattern p = Pattern.compile("-[0-9]+-");
             Matcher m = p.matcher(msg);
 
@@ -144,46 +156,98 @@ public class NodeComponent {
                 String result_msg;
                 String lengthString = msg.substring(m.start() + 1, m.end() - 1);
                 int length = Integer.parseInt(lengthString);
-                if (msg.length() < m.end() + length) throw new Exception("Length error");
-                else result_msg = msg.substring(m.end(), m.end() + length);
 
-                SocketAddress address = channel.remoteAddress();
-                if (!base64Message(address, result_msg)) decMessage(address, result_msg);
+                if (msg.length() == m.end() + length) {
+
+                    result_msg = msg.substring(m.end(), m.end() + length);
+
+                    SocketAddress address = channel.remoteAddress();
+                    Message message = base64Message(result_msg);
+                    if (message == null) {
+                        message = decMessage(result_msg, address);
+                        message.setEncoded(true);
+                    }
+
+                    messageHandler(message, address);
+                } else messageCacheMap.put(channel, msg.substring(m.start(), msg.length()));
+
             }
         } catch (Exception e) {
             logger.error("Error during message reading: %s", e.getMessage());
-            // Answer about wrong message
-            sendWrongMessage(channel);
+            sendMessageWrongMessage(channel);
         }
     }
 
     /*
     If key is needed handler
-     */
-    private boolean base64Message(SocketAddress address, String msg) {
+    */
+    private Message base64Message(String msg) {
         try {
-            Calculator calculator;
-
-            // Decoding by base64Message and parsing json
             msg = new String(Base64.getDecoder().decode(msg));
-            Message message = new Message(msg);
+            return new Message(msg);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
-            logger.info("Message from address '%s' received: %s", address.toString(), message.getType());
+    /*
+    Message decoder
+     */
+    private Message decMessage(String msg, SocketAddress address) throws Exception {
+        try {
+            Calculator calculator = calculatorService.getByAddressAndActive(address, true);
+            if (calculator == null) throw new Exception("Unexpected error: calculator not found");
 
+            msg = CipherComponent.decodeDes(msg, calculator.getKey());
+            return new Message(msg);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
+            throw new Exception("Unexpected error: decoding error");
+        } catch (IOException e) {
+            throw new Exception("Unexpected error: json parsing error");
+        } catch (Exception e) {
+            throw new Exception("Unexpected error: wrong message");
+        }
+    }
+
+    /*
+    Message handler
+     */
+    private void messageHandler(Message message, SocketAddress address) {
+        logger.info("Message from client '%s': %s", address.toString(), message.getType());
+
+        Calculator calculator;
+
+        if (!message.isEncoded()) {
+            switch (message.getType()) {
+                case "key request":
+                    calculator = checkCalculator(message.getValue(), address);
+                    calculatorService.updateKeyById(calculator.getId(), null);
+                    return;
+            }
+        }
+
+        if (message.isEncoded()) {
             switch (message.getType()) {
                 case "status":
                     calculator = checkCalculator(message.getValue(), address);
                     calculatorStatusService.add(new CalculatorStatus(calculator, "CONNECTED", new Date()));
-                    return true;
-                case "key request":
+                    return;
+                case "properties request":
                     calculator = checkCalculator(message.getValue(), address);
-                    genKey(calculator.getId());
-                    return true;
-                default:
-                    return false;
+                    if (channelMap.containsKey(address)) {
+                        Channel channel = channels.find(channelMap.get(address));
+                        sendMessageProperties(channel, calculator);
+                    }
+                    return;
+                case "confirm":
+                    taskService.updateConfirmedById(message.getId(), true);
+                    return;
             }
-        } catch (Exception e) {
-            return false;
+        }
+
+        if (channelMap.containsKey(address)) {
+            Channel channel = channels.find(channelMap.get(address));
+            sendMessageWrongMessage(channel);
         }
     }
 
@@ -195,7 +259,7 @@ public class NodeComponent {
         // Make all calculator with the same address archived
         calculatorService.updateAllArchiveByAddress(address, true);
 
-        Calculator calculator =calculatorService.getByName(name);
+        Calculator calculator = calculatorService.getByName(name);
 
         if (calculator != null) {
             if (!calculator.getAddress().equals(address)) calculator.setAddress(address);
@@ -211,63 +275,6 @@ public class NodeComponent {
         calculatorService.addOrUpdate(calculator);
 
         return calculator;
-    }
-
-    /*
-    Message decoder
-     */
-    private void decMessage(SocketAddress address, String msg) throws Exception {
-        try {
-            Calculator calculator = calculatorService.getByAddressAndActive(address, true);
-            if (calculator == null) throw new Exception("Unexpected error: calculator not found");
-
-            // Decoding
-            msg = CipherComponent.decodeDes(msg, calculator.getKey());
-            Message message = new Message(msg);
-
-            logger.info("Message from address '%s' received: %s", calculator.getAddress().toString(), message.getType());
-
-            // switch handler by type
-            switch (message.getType()) {
-                case "properties request":
-                    // Alright!
-                    break;
-                case "confirm":
-                    confirmationHandler(message.getId());
-                    break;
-                default:
-                    throw new Exception("wrong message");
-            }
-
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
-            e.printStackTrace();
-            throw new Exception("Unexpected error: decoding error");
-        } catch (IOException e) {
-            throw new Exception("Unexpected error: json parsing error");
-        } catch (Exception e) {
-            throw new Exception("Unexpected error: " + e.getMessage());
-        }
-    }
-
-    /*
-    Confirmation handler
-     */
-    private void confirmationHandler(int id) {
-        taskService.updateConfirmedById(id, true);
-    }
-
-    private void sendWrongMessage(Channel channel) {
-        logger.info("Sending a wrong message to '%s'", channel.remoteAddress().toString());
-
-        ObjectNode jsonOutput = new ObjectMapper().createObjectNode();
-        jsonOutput.put("type", "wrong message");
-        jsonOutput.put("value", "");
-        jsonOutput.put("id", "");
-        sendMessage(channel, jsonOutput.toString(), null);
-    }
-
-    private void genKey(int id) {
-        calculatorService.updateKeyById(id,null);
     }
 
 }

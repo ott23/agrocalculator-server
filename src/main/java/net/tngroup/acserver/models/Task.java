@@ -15,7 +15,7 @@ public class Task {
     private int id;
 
     @NonNull
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "calculator_id", nullable = false)
     private Calculator calculator;
 

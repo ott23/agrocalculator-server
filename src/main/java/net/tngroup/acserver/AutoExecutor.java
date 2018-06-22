@@ -62,7 +62,7 @@ public class AutoExecutor implements ApplicationRunner {
 
         Arrays.stream(calculatorProperties).forEach((p) -> {
             Setting setting = settingService.getByNameAndCalculatorId(p, null);
-            if (setting == null) settingService.add(new Setting(p, env.getProperty("default." + p)));
+            if (setting == null) settingService.addOrUpdate(new Setting(p, env.getProperty("default." + p)));
         });
     }
 

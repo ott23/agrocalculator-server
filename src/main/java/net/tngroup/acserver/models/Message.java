@@ -10,16 +10,24 @@ import java.io.IOException;
 @Data
 public class Message {
 
-    String type;
+    private String type;
 
-    String value;
+    private String value;
 
-    Integer id;
+    private Integer id;
+
+    private boolean encoded = false;
 
     public Message(Task task) {
         type = task.getType();
         value = task.getValue();
         id = task.getId();
+    }
+
+    public Message(String type, String value, Integer id) {
+        this.type = type;
+        this.value = value;
+        this.id = id;
     }
 
     public Message(String message) throws IOException {
@@ -28,6 +36,7 @@ public class Message {
         type = jsonInput.get("type").asText();
         value = jsonInput.get("value").asText();
         id = jsonInput.get("id").asInt();
+        encoded = jsonInput.get("encoded").asBoolean();
     }
 
     public String formJson() {
@@ -35,6 +44,7 @@ public class Message {
         json.put("id", id);
         json.put("type", type);
         json.put("value", value);
+        json.put("encoded", encoded);
         return  json.toString();
     }
 }
