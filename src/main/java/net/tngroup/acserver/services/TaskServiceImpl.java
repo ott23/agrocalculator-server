@@ -21,6 +21,11 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public Task getById(int id) {
+        return taskRepository.findById(id).orElse(null);
+    }
+
+    @Override
     public void updateConfirmedById(int id, boolean confirmed) {
         taskRepository.findById(id).ifPresent(t -> {
             t.setConfirmed(confirmed);

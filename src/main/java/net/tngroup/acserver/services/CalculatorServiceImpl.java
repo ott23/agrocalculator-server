@@ -5,8 +5,10 @@ import net.tngroup.acserver.repositories.CalculatorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.net.SocketAddress;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CalculatorServiceImpl implements CalculatorService {
@@ -20,14 +22,15 @@ public class CalculatorServiceImpl implements CalculatorService {
 
     @Override
     public List<Calculator> getAll() {
-        return calculatorRepository.findAll();
+        return calculatorRepository.findAll().stream()
+                .peek(c -> c.setTasks(c.getTasks().stream().filter(t -> !t.isConfirmed()).collect(Collectors.toSet())))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Calculator> getAllByKey(String key) {
+    public List<Calculator> getAllByKey(boolean key) {
         return calculatorRepository.findAllByKey(key);
     }
-
 
     @Override
     public Calculator getById(int id) {
@@ -40,14 +43,22 @@ public class CalculatorServiceImpl implements CalculatorService {
     }
 
     @Override
-    public Calculator getByAddressAndActive(SocketAddress address, boolean active) {
-        return calculatorRepository.findByAddressAndActive(address, active).orElse(null);
+    public Calculator getByAddressAndConnection(SocketAddress address, boolean connection) {
+        return calculatorRepository.findByAddressAndConnection(address, connection).orElse(null);
     }
 
     @Override
-    public void updateAllActive(boolean active) {
-        calculatorRepository.findAll().forEach(c -> {
-            c.setActive(active);
+    public void updateAllStatus(boolean status) {
+        calculatorRepository.findAllByStatus(!status).forEach(c -> {
+            c.setStatus(status);
+            calculatorRepository.save(c);
+        });
+    }
+
+    @Override
+    public void updateAllConnection(boolean connection) {
+        calculatorRepository.findAllByConnection(!connection).forEach(c -> {
+            c.setConnection(connection);
             calculatorRepository.save(c);
         });
     }
@@ -61,9 +72,25 @@ public class CalculatorServiceImpl implements CalculatorService {
     }
 
     @Override
-    public void updateKeyById(int id, String key) {
+    public void updateKeyById(int id, boolean key) {
         calculatorRepository.findById(id).ifPresent(c -> {
             c.setKey(key);
+            calculatorRepository.save(c);
+        });
+    }
+
+    @Override
+    public void updateEncodedKeyById(int id, String encodedKey) {
+        calculatorRepository.findById(id).ifPresent(c -> {
+            c.setEncodedKey(encodedKey);
+            calculatorRepository.save(c);
+        });
+    }
+
+    @Override
+    public void updateStatusById(int id, boolean status) {
+        calculatorRepository.findById(id).ifPresent(c -> {
+            c.setStatus(status);
             calculatorRepository.save(c);
         });
     }
@@ -77,9 +104,9 @@ public class CalculatorServiceImpl implements CalculatorService {
     }
 
     @Override
-    public void updateActiveById(int id, boolean active) {
+    public void updateConnectionById(int id, boolean connection) {
         calculatorRepository.findById(id).ifPresent(c -> {
-            c.setActive(active);
+            c.setConnection(connection);
             calculatorRepository.save(c);
         });
     }
@@ -87,5 +114,11 @@ public class CalculatorServiceImpl implements CalculatorService {
     @Override
     public void addOrUpdate(Calculator calculator) {
         calculatorRepository.save(calculator);
+    }
+
+    @Override
+    @Transactional
+    public void removeById(int id) {
+        calculatorRepository.deleteById(id);
     }
 }

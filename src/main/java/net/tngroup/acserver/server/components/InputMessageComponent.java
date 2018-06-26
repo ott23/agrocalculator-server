@@ -91,7 +91,7 @@ public class InputMessageComponent {
     }
 
     /*
-    If key is needed handler
+    If encodedKey is needed handler
     */
     private Message base64Message(String msg) {
         try {
@@ -107,10 +107,10 @@ public class InputMessageComponent {
      */
     private Message decMessage(String msg, SocketAddress address) throws Exception {
         try {
-            Calculator calculator = calculatorService.getByAddressAndActive(address, true);
+            Calculator calculator = calculatorService.getByAddressAndConnection(address, true);
             if (calculator == null) throw new Exception("Unexpected error: calculator not found");
 
-            msg = CipherComponent.decodeDes(msg, calculator.getKey());
+            msg = CipherComponent.decodeDes(msg, calculator.getEncodedKey());
             return new Message(msg);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
             throw new Exception("Unexpected error: decoding error");
@@ -127,26 +127,25 @@ public class InputMessageComponent {
     private void messageHandler(Message message, SocketAddress address) throws Exception {
         logger.info("Message from client '%s': %s", address.toString(), message.getType());
 
-        if (!message.isEncoded()) {
-            switch (message.getType()) {
-                case "key request":
-                    keyRequestEvent(message, address);
-                    return;
-            }
+        // Key request
+        if (message.getType().equals("key request") && !message.isEncoded()) {
+            keyRequestEvent(message, address);
+            return;
         }
-
-        if (message.isEncoded()) {
-            switch (message.getType()) {
-                case "status":
-                    statusEvent(message, address);
-                    return;
-                case "properties request":
-                    propertiesRequestEvent(message, address);
-                    return;
-                case "confirm":
-                    confirmEvent(message);
-                    return;
-            }
+        // Status
+        if (message.getType().equals("status") && message.isEncoded()) {
+            statusEvent(message, address);
+            return;
+        }
+        // Settings request
+        if (message.getType().equals("settings request") && message.isEncoded()) {
+            propertiesRequestEvent(message, address);
+            return;
+        }
+        // Confirm
+        if (message.getType().equals("confirm") && message.isEncoded()) {
+            confirmEvent(message, address);
+            return;
         }
 
         throw new Exception("Message type not found");
@@ -154,7 +153,9 @@ public class InputMessageComponent {
 
     private void keyRequestEvent(Message message, SocketAddress address) {
         Calculator calculator = statusComponent.checkCalculator(message.getValue(), address);
-        calculatorService.updateKeyById(calculator.getId(), null);
+        calculatorService.updateKeyById(calculator.getId(), false);
+        calculatorService.updateEncodedKeyById(calculator.getId(), null);
+        calculatorStatusService.add(new CalculatorStatus(calculator, "CONNECTED", new Date()));
     }
 
     private void propertiesRequestEvent(Message message, SocketAddress address) {
@@ -162,7 +163,7 @@ public class InputMessageComponent {
             Calculator calculator = statusComponent.checkCalculator(message.getValue(), address);
             List<Setting> settingList = settingService.getAllByCalculatorId(calculator.getId());
             String json = new ObjectMapper().writeValueAsString(settingList);
-            taskService.add(new Task(calculator, "properties", json));
+            taskService.add(new Task(calculator, "settings", json));
         } catch (JsonProcessingException e) {
             logger.error("Error during json forming: %s", e.getMessage());
         }
@@ -170,11 +171,49 @@ public class InputMessageComponent {
 
     private void statusEvent(Message message, SocketAddress address) {
         Calculator calculator = statusComponent.checkCalculator(message.getValue(), address);
+        if (message.getId().equals(1)) calculatorService.updateStatusById(calculator.getId(), true);
+        else calculatorService.updateStatusById(calculator.getId(), false);
         calculatorStatusService.add(new CalculatorStatus(calculator, "CONNECTED", new Date()));
     }
 
-    private void confirmEvent(Message message) {
+    private void confirmEvent(Message message, SocketAddress address) throws Exception {
         taskService.updateConfirmedById(message.getId(), true);
+
+        Task task = taskService.getById(message.getId());
+        Calculator calculator = calculatorService.getByAddressAndConnection(address, true);
+
+        // Start confirm event
+        if (task.getValue().equals("start")) {
+            calculatorService.updateStatusById(calculator.getId(), true);
+            return;
+        }
+        // Stop confirm event
+        if (task.getValue().equals("stop")) {
+            calculatorService.updateStatusById(calculator.getId(), false);
+            return;
+        }
+        // Destroy confirm event
+        if (task.getValue().equals("destroy")) {
+            calculatorService.updateArchiveById(calculator.getId(), true);
+            return;
+        }
+        // Key confirm event
+        if (message.getValue().equals("key")) {
+            calculatorService.updateKeyById(calculator.getId(), true);
+            return;
+        }
+
+        // Shutdown
+        if (message.getValue().equals("shutdown")) {
+            return;
+        }
+
+        // Settings
+        if (message.getValue().equals("settings")) {
+            return;
+        }
+
+        throw new Exception("Confirmation error");
     }
 
 }

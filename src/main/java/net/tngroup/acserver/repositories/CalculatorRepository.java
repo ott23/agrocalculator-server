@@ -11,9 +11,11 @@ import java.util.Optional;
 @Repository
 public interface CalculatorRepository extends JpaRepository<Calculator, Integer> {
 
-    List<Calculator> findAllByKey(String key);
+    List<Calculator> findAllByKey(boolean key);
+    List<Calculator> findAllByStatus(boolean status);
+    List<Calculator> findAllByConnection(boolean connection);
     List<Calculator> findAllByAddress(SocketAddress address);
-    Optional<Calculator> findByAddressAndActive(SocketAddress address, boolean active);
+    Optional<Calculator> findByAddressAndConnection(SocketAddress address, boolean connection);
     Optional<Calculator> findByName(String name);
 
 }

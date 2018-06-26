@@ -1,5 +1,6 @@
 package net.tngroup.acserver.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.*;
 
 import javax.persistence.*;
@@ -16,6 +17,7 @@ public class CalculatorStatus {
     private int id;
 
     @NonNull
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "calculator_id", nullable = false)
     private Calculator calculator;

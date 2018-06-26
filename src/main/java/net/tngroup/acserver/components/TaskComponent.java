@@ -15,7 +15,7 @@ import java.net.SocketAddress;
 import java.util.Map;
 
 @Component
-public class TaskComponent {
+public class TaskComponent extends Thread {
 
     private TaskService taskService;
     private StatusComponent statusComponent;
@@ -30,17 +30,16 @@ public class TaskComponent {
         this.outputMessageComponent = outputMessageComponent;
     }
 
-    public void init() {
-        new Thread(() -> {
-            try {
-                while (!Thread.currentThread().isInterrupted()) {
-                    handleTasks();
-                    Thread.sleep(1000);
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+    @Override
+    public void run() {
+        try {
+            while (!Thread.currentThread().isInterrupted()) {
+                handleTasks();
+                Thread.sleep(1000);
             }
-        }).start();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private void handleTasks() {
@@ -53,7 +52,7 @@ public class TaskComponent {
                 Channel channel = channels.find(channelMap.get(calculator.getAddress()));
 
                 String key = null;
-                if (!t.getType().equals("key")) key = calculator.getKey();
+                if (!t.getType().equals(calculator.getName())) key = calculator.getEncodedKey();
 
                 outputMessageComponent.sendMessage(new Message(t), channel, key);
             }

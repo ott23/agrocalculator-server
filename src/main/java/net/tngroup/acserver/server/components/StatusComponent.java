@@ -39,8 +39,9 @@ public class StatusComponent {
         this.calculatorService = calculatorService;
         this.calculatorStatusService = calculatorStatusService;
 
-        // Make all calculator not active on init
-        calculatorService.updateAllActive(false);
+        // Make all calculator not connection on init
+        calculatorService.updateAllConnection(false);
+        calculatorService.updateAllStatus(false);
 
         channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
         channelMap = new HashMap<>();
@@ -67,10 +68,10 @@ public class StatusComponent {
         channels.remove(channel);
         channelMap.remove(channel.remoteAddress());
 
-        // Set status "Not active" if calculator exists
-        Calculator calculator = calculatorService.getByAddressAndActive(channel.remoteAddress(), true);
+        // Set status "Not connection" if calculator exists
+        Calculator calculator = calculatorService.getByAddressAndConnection(channel.remoteAddress(), true);
         if (calculator != null) {
-            calculatorService.updateActiveById(calculator.getId(), false);
+            calculatorService.updateConnectionById(calculator.getId(), false);
             calculatorStatusService.add(new CalculatorStatus(calculator, "DISCONNECTED", new Date()));
         }
     }
@@ -92,7 +93,7 @@ public class StatusComponent {
             calculator.setAddress(address);
         }
 
-        calculator.setActive(true);
+        calculator.setConnection(true);
         calculator.setArchive(false);
 
         calculatorService.addOrUpdate(calculator);

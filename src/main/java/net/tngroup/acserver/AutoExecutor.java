@@ -43,7 +43,7 @@ public class AutoExecutor implements ApplicationRunner {
         nodeServer.createBootstrap();
         logger.info("Server started");
 
-        taskComponent.init();
+        taskComponent.run();
 
     }
 

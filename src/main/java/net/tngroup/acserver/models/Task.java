@@ -1,6 +1,10 @@
 package net.tngroup.acserver.models;
 
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import javax.persistence.*;
 
@@ -15,6 +19,7 @@ public class Task {
     private int id;
 
     @NonNull
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "calculator_id", nullable = false)
     private Calculator calculator;
@@ -23,6 +28,7 @@ public class Task {
     private String type;
 
     @NonNull
+    @Column(length = 5000)
     private String value;
 
     private boolean confirmed = false;

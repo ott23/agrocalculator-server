@@ -8,19 +8,24 @@ import java.util.List;
 public interface CalculatorService {
 
     List<Calculator> getAll();
-    List<Calculator> getAllByKey(String key);
+    List<Calculator> getAllByKey(boolean key);
 
     Calculator getById(int id);
     Calculator getByName(String name);
-    Calculator getByAddressAndActive(SocketAddress address, boolean active);
+    Calculator getByAddressAndConnection(SocketAddress address, boolean connection);
 
-    void updateAllActive(boolean active);
-    void updateAllArchiveByAddress(SocketAddress address, boolean active);
+    void updateAllStatus(boolean status);
+    void updateAllConnection(boolean connection);
+    void updateAllArchiveByAddress(SocketAddress address, boolean archive);
 
-    void updateKeyById(int id, String key);
+    void updateKeyById(int id, boolean key);
+    void updateEncodedKeyById(int id, String encodedKey);
+    void updateStatusById(int id, boolean status);
     void updateArchiveById(int id, boolean archive);
-    void updateActiveById(int id, boolean active);
+    void updateConnectionById(int id, boolean connection);
 
     void addOrUpdate(Calculator calculator);
+
+    void removeById(int id);
 
 }

@@ -72,7 +72,7 @@ public class CalculatorController {
     public ResponseEntity getListNeedKey() {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            List<Calculator> calculatorList = calculatorService.getAllByKey(null);
+            List<Calculator> calculatorList = calculatorService.getAllByKey(false);
             String response = objectMapper.writeValueAsString(calculatorList);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -87,9 +87,57 @@ public class CalculatorController {
     public ResponseEntity sendNewKeyById(@PathVariable int id) {
         ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
         try {
-            calculatorService.updateKeyById(id, CipherComponent.generateDesKey());
+            calculatorService.updateEncodedKeyById(id, CipherComponent.generateDesKey());
             Calculator calculator = calculatorService.getById(id);
-            taskService.add(new Task(calculator, "key", calculator.getKey()));
+            taskService.add(new Task(calculator, calculator.getName(), calculator.getEncodedKey()));
+            jsonResponse.put("response", "Success");
+            String response = jsonResponse.toString();
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            jsonResponse.put("response", "Server error: " + e.getMessage());
+            String response = jsonResponse.toString();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    @RequestMapping("/switch/{id}")
+    public ResponseEntity switchById(@PathVariable int id) {
+        ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
+        try {
+            Calculator calculator = calculatorService.getById(id);
+            taskService.add(new Task(calculator, "command", calculator.isStatus() ? "stop" : "start"));
+            jsonResponse.put("response", "Success");
+            String response = jsonResponse.toString();
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            jsonResponse.put("response", "Server error: " + e.getMessage());
+            String response = jsonResponse.toString();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    @RequestMapping("/shutdown/{id}")
+    public ResponseEntity shutdownById(@PathVariable int id) {
+        ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
+        try {
+            Calculator calculator = calculatorService.getById(id);
+            taskService.add(new Task(calculator, "command", "shutdown"));
+            jsonResponse.put("response", "Success");
+            String response = jsonResponse.toString();
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            jsonResponse.put("response", "Server error: " + e.getMessage());
+            String response = jsonResponse.toString();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    @RequestMapping("/kill/{id}")
+    public ResponseEntity killById(@PathVariable int id) {
+        ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
+        try {
+            Calculator calculator = calculatorService.getById(id);
+            taskService.add(new Task(calculator, "command", "destroy"));
             jsonResponse.put("response", "Success");
             String response = jsonResponse.toString();
             return ResponseEntity.ok(response);
@@ -104,9 +152,8 @@ public class CalculatorController {
     public ResponseEntity deleteById(@PathVariable int id) {
         ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
         try {
-            calculatorService.updateArchiveById(id, true);
             Calculator calculator = calculatorService.getById(id);
-            taskService.add(new Task(calculator, "command", "destroy"));
+            calculatorService.removeById(calculator.getId());
             jsonResponse.put("response", "Success");
             String response = jsonResponse.toString();
             return ResponseEntity.ok(response);

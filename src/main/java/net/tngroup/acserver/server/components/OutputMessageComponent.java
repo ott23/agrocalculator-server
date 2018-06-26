@@ -21,7 +21,7 @@ public class OutputMessageComponent {
     */
     public void sendMessage(Message message, Channel channel, String key) {
         try {
-            logger.info("Sending a '%s' message to '%s'", message.getType(), channel.remoteAddress().toString());
+            logger.info("Sending message to  '%s': %s", channel.remoteAddress().toString(), message.getType());
 
             String msg = message.formJson();
             if (key != null) msg = CipherComponent.encodeDes(msg, key);
