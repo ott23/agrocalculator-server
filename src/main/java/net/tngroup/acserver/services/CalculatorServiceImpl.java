@@ -28,8 +28,13 @@ public class CalculatorServiceImpl implements CalculatorService {
     }
 
     @Override
-    public List<Calculator> getAllByKey(boolean key) {
-        return calculatorRepository.findAllByKey(key);
+    public List<Calculator> getAllByName(String name) {
+        return calculatorRepository.findAllByName(name);
+    }
+
+    @Override
+    public List<Calculator> getAllByAddress(SocketAddress address) {
+        return calculatorRepository.findAllByAddress(address);
     }
 
     @Override
@@ -38,8 +43,8 @@ public class CalculatorServiceImpl implements CalculatorService {
     }
 
     @Override
-    public Calculator getByName(String name) {
-        return calculatorRepository.findByName(name).orElse(null);
+    public Calculator getByCode(String code) {
+        return calculatorRepository.findByCode(code).orElse(null);
     }
 
     @Override
@@ -72,17 +77,9 @@ public class CalculatorServiceImpl implements CalculatorService {
     }
 
     @Override
-    public void updateKeyById(int id, boolean key) {
+    public void updateKeyById(int id, String encodedKey) {
         calculatorRepository.findById(id).ifPresent(c -> {
-            c.setKey(key);
-            calculatorRepository.save(c);
-        });
-    }
-
-    @Override
-    public void updateEncodedKeyById(int id, String encodedKey) {
-        calculatorRepository.findById(id).ifPresent(c -> {
-            c.setEncodedKey(encodedKey);
+            c.setKey(encodedKey);
             calculatorRepository.save(c);
         });
     }

@@ -13,10 +13,7 @@ import net.tngroup.acserver.services.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -53,6 +50,22 @@ public class CalculatorController {
         }
     }
 
+    @RequestMapping("/getAllByName/{name}")
+    public ResponseEntity getByName(@PathVariable String name) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            // Get user
+            List<Calculator> calculatorList = calculatorService.getAllByName(name);
+            String response = objectMapper.writeValueAsString(calculatorList);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ObjectNode jsonResponse = objectMapper.createObjectNode();
+            jsonResponse.put("response", "Server error: " + e.getMessage());
+            String response = jsonResponse.toString();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
     @RequestMapping("/status/{id}")
     public ResponseEntity getStatusList(@PathVariable int id) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -68,28 +81,30 @@ public class CalculatorController {
         }
     }
 
-    @RequestMapping("/need-key")
-    public ResponseEntity getListNeedKey() {
-        ObjectMapper objectMapper = new ObjectMapper();
+    @RequestMapping("/sendKey/{id}")
+    public ResponseEntity sendNewKeyById(@PathVariable int id) {
+        ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
         try {
-            List<Calculator> calculatorList = calculatorService.getAllByKey(false);
-            String response = objectMapper.writeValueAsString(calculatorList);
+            calculatorService.updateKeyById(id, CipherComponent.generateDesKey());
+            Calculator calculator = calculatorService.getById(id);
+            taskService.add(new Task(calculator, "key", calculator.getKey()));
+            jsonResponse.put("response", "Success");
+            String response = jsonResponse.toString();
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            ObjectNode jsonResponse = objectMapper.createObjectNode();
             jsonResponse.put("response", "Server error: " + e.getMessage());
             String response = jsonResponse.toString();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 
-    @RequestMapping("/send-key/{id}")
-    public ResponseEntity sendNewKeyById(@PathVariable int id) {
-        ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
+    @RequestMapping("/set")
+    public ResponseEntity set(@RequestBody String jsonRequest) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode jsonResponse = objectMapper.createObjectNode();
         try {
-            calculatorService.updateEncodedKeyById(id, CipherComponent.generateDesKey());
-            Calculator calculator = calculatorService.getById(id);
-            taskService.add(new Task(calculator, calculator.getName(), calculator.getEncodedKey()));
+            Calculator calculator = objectMapper.readValue(jsonRequest, Calculator.class);
+            calculatorService.addOrUpdate(calculator);
             jsonResponse.put("response", "Success");
             String response = jsonResponse.toString();
             return ResponseEntity.ok(response);

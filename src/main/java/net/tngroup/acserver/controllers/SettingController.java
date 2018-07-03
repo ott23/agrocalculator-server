@@ -1,5 +1,6 @@
 package net.tngroup.acserver.controllers;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -30,6 +31,7 @@ public class SettingController {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             List<Setting> settingList = settingService.getAll();
+            objectMapper.setSerializationInclusion(JsonInclude.Include.ALWAYS);
             String response = objectMapper.writeValueAsString(settingList);
             return ResponseEntity.ok(response);
         } catch (JsonProcessingException e) {

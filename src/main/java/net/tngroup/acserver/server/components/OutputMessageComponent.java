@@ -5,6 +5,7 @@ import net.tngroup.acserver.components.CipherComponent;
 import net.tngroup.acserver.models.Message;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Base64;
@@ -14,7 +15,12 @@ public class OutputMessageComponent {
 
     private Logger logger = LogManager.getFormatterLogger("ConsoleLogger");
 
-    private OutputMessageComponent() {}
+    private CipherComponent cipherComponent;
+
+    @Autowired
+    private OutputMessageComponent(CipherComponent cipherComponent) {
+        this.cipherComponent = cipherComponent;
+    }
 
     /*
     Handler of message sending
@@ -24,7 +30,7 @@ public class OutputMessageComponent {
             logger.info("Sending message to  '%s': %s", channel.remoteAddress().toString(), message.getType());
 
             String msg = message.formJson();
-            if (key != null) msg = CipherComponent.encodeDes(msg, key);
+            if (key != null) msg = cipherComponent.encodeDes(msg, key);
             else msg = Base64.getEncoder().encodeToString(msg.getBytes());
             String result_msg = "-" + msg.length() + "-" + msg;
 
@@ -35,7 +41,7 @@ public class OutputMessageComponent {
     }
 
     void sendMessageWrongMessage(Channel channel) {
-        sendMessage(new Message("wrong message", "wrong message", null), channel, null);
+        sendMessage(new Message(null, "wrong message", null, null), channel, null);
     }
 
 }

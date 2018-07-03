@@ -52,7 +52,7 @@ public class TaskComponent extends Thread {
                 Channel channel = channels.find(channelMap.get(calculator.getAddress()));
 
                 String key = null;
-                if (!t.getType().equals(calculator.getName())) key = calculator.getEncodedKey();
+                if (!t.getType().equals("key")) key = calculator.getKey();
 
                 outputMessageComponent.sendMessage(new Message(t), channel, key);
             }

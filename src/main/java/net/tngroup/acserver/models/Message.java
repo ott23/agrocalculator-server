@@ -10,6 +10,8 @@ import java.io.IOException;
 @Data
 public class Message {
 
+    private String code;
+
     private String type;
 
     private String value;
@@ -19,12 +21,14 @@ public class Message {
     private boolean encoded = false;
 
     public Message(Task task) {
+        code = task.getCalculator().getCode();
         type = task.getType();
         value = task.getValue();
         id = task.getId();
     }
 
-    public Message(String type, String value, Integer id) {
+    public Message(String code, String type, String value, Integer id) {
+        this.code = code;
         this.type = type;
         this.value = value;
         this.id = id;
@@ -33,6 +37,7 @@ public class Message {
     public Message(String message) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonInput = objectMapper.readTree(message);
+        code = jsonInput.get("code").asText();
         type = jsonInput.get("type").asText();
         value = jsonInput.get("value").asText();
         id = jsonInput.get("id").asInt();
@@ -41,6 +46,7 @@ public class Message {
 
     public String formJson() {
         ObjectNode json = new ObjectMapper().createObjectNode();
+        json.put("code", code);
         json.put("id", id);
         json.put("type", type);
         json.put("value", value);

@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Date;
 import java.util.HashMap;
@@ -72,24 +73,24 @@ public class StatusComponent {
         Calculator calculator = calculatorService.getByAddressAndConnection(channel.remoteAddress(), true);
         if (calculator != null) {
             calculatorService.updateConnectionById(calculator.getId(), false);
-            calculatorStatusService.add(new CalculatorStatus(calculator, "DISCONNECTED", new Date()));
+            calculatorStatusService.add(new CalculatorStatus("DISCONNECTED", new Date(), calculator));
         }
     }
 
     /*
-    Check name
+    Check code
     */
-    Calculator checkCalculator(String name, SocketAddress address) {
+    Calculator checkCalculator(String code, InetSocketAddress address) {
         // Make all calculator with the same address archived
         calculatorService.updateAllArchiveByAddress(address, true);
 
-        Calculator calculator = calculatorService.getByName(name);
+        Calculator calculator = calculatorService.getByCode(code);
 
         if (calculator != null) {
             if (!calculator.getAddress().equals(address)) calculator.setAddress(address);
         } else {
             calculator = new Calculator();
-            calculator.setName(name);
+            calculator.setCode(code);
             calculator.setAddress(address);
         }
 

@@ -18,7 +18,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -36,6 +36,7 @@ public class InputMessageComponent {
     private SettingService settingService;
     private StatusComponent statusComponent;
     private OutputMessageComponent outputMessageComponent;
+    private CipherComponent cipherComponent;
 
     @Autowired
     public InputMessageComponent(CalculatorService calculatorService,
@@ -43,13 +44,15 @@ public class InputMessageComponent {
                                  TaskService taskService,
                                  SettingService settingService,
                                  StatusComponent statusComponent,
-                                 OutputMessageComponent outputMessageComponent) {
+                                 OutputMessageComponent outputMessageComponent,
+                                 CipherComponent cipherComponent) {
         this.calculatorService = calculatorService;
         this.calculatorStatusService = calculatorStatusService;
         this.taskService = taskService;
         this.settingService = settingService;
         this.statusComponent = statusComponent;
         this.outputMessageComponent = outputMessageComponent;
+        this.cipherComponent = cipherComponent;
     }
 
     /*
@@ -73,7 +76,7 @@ public class InputMessageComponent {
 
                     result_msg = msg.substring(m.end(), m.end() + length);
 
-                    SocketAddress address = channel.remoteAddress();
+                    InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
                     Message message = base64Message(result_msg);
                     if (message == null) {
                         message = decMessage(result_msg, address);
@@ -96,6 +99,7 @@ public class InputMessageComponent {
     private Message base64Message(String msg) {
         try {
             msg = new String(Base64.getDecoder().decode(msg));
+
             return new Message(msg);
         } catch (Exception e) {
             return null;
@@ -105,26 +109,37 @@ public class InputMessageComponent {
     /*
     Message decoder
      */
-    private Message decMessage(String msg, SocketAddress address) throws Exception {
+    private Message decMessage(String msg, InetSocketAddress address) throws Exception {
         try {
             Calculator calculator = calculatorService.getByAddressAndConnection(address, true);
-            if (calculator == null) throw new Exception("Unexpected error: calculator not found");
-
-            msg = CipherComponent.decodeDes(msg, calculator.getEncodedKey());
-            return new Message(msg);
+            if (calculator == null) {
+                List<Calculator> calculators = calculatorService.getAllByAddress(address);
+                for (Calculator c : calculators) {
+                    try {
+                        msg = cipherComponent.decodeDes(msg, c.getKey());
+                        return new Message(msg);
+                    } catch (Exception e) {
+                        // Key is not correct
+                    }
+                }
+                throw new Exception("calculator not found");
+            } else {
+                msg = cipherComponent.decodeDes(msg, calculator.getKey());
+                return new Message(msg);
+            }
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
             throw new Exception("Unexpected error: decoding error");
         } catch (IOException e) {
             throw new Exception("Unexpected error: json parsing error");
         } catch (Exception e) {
-            throw new Exception("Unexpected error: wrong message");
+            throw new Exception("Unexpected error: " + e.getMessage());
         }
     }
 
     /*
     Message handler
      */
-    private void messageHandler(Message message, SocketAddress address) throws Exception {
+    private void messageHandler(Message message, InetSocketAddress address) throws Exception {
         logger.info("Message from client '%s': %s", address.toString(), message.getType());
 
         // Key request
@@ -151,16 +166,15 @@ public class InputMessageComponent {
         throw new Exception("Message type not found");
     }
 
-    private void keyRequestEvent(Message message, SocketAddress address) {
-        Calculator calculator = statusComponent.checkCalculator(message.getValue(), address);
-        calculatorService.updateKeyById(calculator.getId(), false);
-        calculatorService.updateEncodedKeyById(calculator.getId(), null);
-        calculatorStatusService.add(new CalculatorStatus(calculator, "CONNECTED", new Date()));
+    private void keyRequestEvent(Message message, InetSocketAddress address) {
+        Calculator calculator = statusComponent.checkCalculator(message.getCode(), address);
+        calculatorService.updateKeyById(calculator.getId(), null);
+        calculatorStatusService.add(new CalculatorStatus("CONNECTED", new Date(), calculator));
     }
 
-    private void propertiesRequestEvent(Message message, SocketAddress address) {
+    private void propertiesRequestEvent(Message message, InetSocketAddress address) {
         try {
-            Calculator calculator = statusComponent.checkCalculator(message.getValue(), address);
+            Calculator calculator = statusComponent.checkCalculator(message.getCode(), address);
             List<Setting> settingList = settingService.getAllByCalculatorId(calculator.getId());
             String json = new ObjectMapper().writeValueAsString(settingList);
             taskService.add(new Task(calculator, "settings", json));
@@ -169,14 +183,14 @@ public class InputMessageComponent {
         }
     }
 
-    private void statusEvent(Message message, SocketAddress address) {
-        Calculator calculator = statusComponent.checkCalculator(message.getValue(), address);
+    private void statusEvent(Message message, InetSocketAddress address) {
+        Calculator calculator = statusComponent.checkCalculator(message.getCode(), address);
         if (message.getId().equals(1)) calculatorService.updateStatusById(calculator.getId(), true);
         else calculatorService.updateStatusById(calculator.getId(), false);
-        calculatorStatusService.add(new CalculatorStatus(calculator, "CONNECTED", new Date()));
+        calculatorStatusService.add(new CalculatorStatus("CONNECTED", new Date(), calculator));
     }
 
-    private void confirmEvent(Message message, SocketAddress address) throws Exception {
+    private void confirmEvent(Message message, InetSocketAddress address) throws Exception {
         taskService.updateConfirmedById(message.getId(), true);
 
         Task task = taskService.getById(message.getId());
@@ -198,18 +212,17 @@ public class InputMessageComponent {
             return;
         }
         // Key confirm event
-        if (message.getValue().equals("key")) {
-            calculatorService.updateKeyById(calculator.getId(), true);
+        if (task.getType().equals("key")) {
             return;
         }
 
         // Shutdown
-        if (message.getValue().equals("shutdown")) {
+        if (task.getValue().equals("shutdown")) {
             return;
         }
 
         // Settings
-        if (message.getValue().equals("settings")) {
+        if (task.getType().equals("settings")) {
             return;
         }
 

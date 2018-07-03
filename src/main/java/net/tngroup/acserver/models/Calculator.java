@@ -1,19 +1,19 @@
 package net.tngroup.acserver.models;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.persistence.*;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.Set;
 
 @Data
 @EqualsAndHashCode(exclude = {"tasks", "calculatorStatuses", "settings"})
 @ToString(exclude = {"tasks", "calculatorStatuses", "settings"})
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property="id", scope = Calculator.class)
 @Entity
 public class Calculator {
 
@@ -21,14 +21,13 @@ public class Calculator {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    private String code;
+
     private String name;
 
-    @JsonDeserialize(as = InetSocketAddress.class)
-    private SocketAddress address;
+    private InetSocketAddress address;
 
-    private String encodedKey;
-
-    private boolean key = false;
+    private String key;
 
     private boolean status = false;
 
@@ -36,16 +35,14 @@ public class Calculator {
 
     private boolean archive = false;
 
-    @JsonManagedReference
+    //@JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "calculator")
     private Set<Task> tasks;
 
-    @JsonManagedReference
+    //@JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "calculator")
     private Set<CalculatorStatus> calculatorStatuses;
 
-    @JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "calculator")
     private Set<Setting> settings;
-
 }

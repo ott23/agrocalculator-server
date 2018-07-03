@@ -1,13 +1,18 @@
 package net.tngroup.acserver.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import javax.persistence.*;
 
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property="id", scope = Setting.class)
 @Entity
 public class Setting {
 
@@ -21,7 +26,6 @@ public class Setting {
     @NonNull
     private String value;
 
-    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "calculator_id")
     private Calculator calculator;
