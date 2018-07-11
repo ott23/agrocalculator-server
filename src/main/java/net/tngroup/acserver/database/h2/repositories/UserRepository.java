@@ -1,0 +1,17 @@
+package net.tngroup.acserver.database.h2.repositories;
+
+import net.tngroup.acserver.database.h2.models.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface UserRepository extends JpaRepository<User, Integer> {
+
+    List<User> findAllByUsername(String username);
+
+    Optional<User> findByUsername(String username);
+
+}
