@@ -1,8 +1,8 @@
 package net.tngroup.acserver.nodeserver;
 
 import net.tngroup.acserver.nodeserver.components.TaskComponent;
-import net.tngroup.acserver.database.h2.models.Setting;
-import net.tngroup.acserver.database.h2.services.SettingService;
+import net.tngroup.acserver.databases.h2.models.Setting;
+import net.tngroup.acserver.databases.h2.services.SettingService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

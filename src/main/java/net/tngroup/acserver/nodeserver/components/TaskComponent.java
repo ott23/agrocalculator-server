@@ -3,9 +3,9 @@ package net.tngroup.acserver.nodeserver.components;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelId;
 import io.netty.channel.group.ChannelGroup;
-import net.tngroup.acserver.database.h2.models.Calculator;
-import net.tngroup.acserver.database.h2.models.Message;
-import net.tngroup.acserver.database.h2.services.TaskService;
+import net.tngroup.acserver.databases.h2.models.Calculator;
+import net.tngroup.acserver.databases.h2.models.Message;
+import net.tngroup.acserver.databases.h2.services.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

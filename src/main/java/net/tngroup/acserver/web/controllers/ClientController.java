@@ -2,16 +2,19 @@ package net.tngroup.acserver.web.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import net.tngroup.acserver.database.cassandra.models.Client;
-import net.tngroup.acserver.database.cassandra.service.ClientService;
+import net.tngroup.acserver.databases.cassandra.models.Client;
+import net.tngroup.acserver.databases.cassandra.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
+
+import static net.tngroup.acserver.web.controllers.Responses.*;
 
 @RestController
 @RequestMapping("/client")
@@ -22,29 +25,6 @@ public class ClientController {
     @Autowired
     public ClientController(ClientService clientService) {
         this.clientService = clientService;
-    }
-
-    private ResponseEntity okResponse(Object o) throws JsonProcessingException {
-        String response = new ObjectMapper().writeValueAsString(o);
-        return ResponseEntity.ok(response);
-    }
-
-    private ResponseEntity successResponse() {
-        ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
-        jsonResponse.put("response", "Success");
-        String response = jsonResponse.toString();
-        return ResponseEntity.ok(response);
-    }
-
-    private ResponseEntity badResponse(Exception e) {
-        ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
-        jsonResponse.put("response", "Server error: " + e.getMessage());
-        String response = jsonResponse.toString();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
-    private ResponseEntity conflictResponse() {
-        return ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 
     @RequestMapping
@@ -63,7 +43,7 @@ public class ClientController {
             Client client = new ObjectMapper().readValue(jsonRequest, Client.class);
 
             List<Client> clientList = clientService.getAllByName(client.getName());
-            if (clientList.size() == 1 && !clientList.get(0).getId().equals(client.getId()) || clientList.size() > 1) return conflictResponse();
+            if (clientList.size() == 1 && !clientList.get(0).getId().equals(client.getId()) || clientList.size() > 1) return Responses.conflictResponse();
 
             if (client.getId() == null) client.setId(UUID.randomUUID());
             clientService.save(client);

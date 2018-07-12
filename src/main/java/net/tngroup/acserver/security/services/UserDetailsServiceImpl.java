@@ -1,7 +1,7 @@
 package net.tngroup.acserver.security.services;
 
-import net.tngroup.acserver.database.h2.models.User;
-import net.tngroup.acserver.database.h2.services.UserService;
+import net.tngroup.acserver.databases.h2.models.User;
+import net.tngroup.acserver.databases.h2.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

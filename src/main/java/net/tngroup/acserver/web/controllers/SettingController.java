@@ -1,17 +1,15 @@
 package net.tngroup.acserver.web.controllers;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import net.tngroup.acserver.database.h2.models.Setting;
-import net.tngroup.acserver.database.h2.services.SettingService;
+import net.tngroup.acserver.databases.h2.models.Setting;
+import net.tngroup.acserver.databases.h2.services.SettingService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static net.tngroup.acserver.web.controllers.Responses.*;
 
 @CrossOrigin
 @RestController
@@ -24,32 +22,6 @@ public class SettingController {
     public SettingController(
             SettingService settingService) {
         this.settingService = settingService;
-    }
-
-    private ResponseEntity okResponse(Object o) throws JsonProcessingException {
-        String response = new ObjectMapper().writeValueAsString(o);
-        return ResponseEntity.ok(response);
-    }
-
-    private ResponseEntity okFullResponse(Object o) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.ALWAYS);
-        String response = objectMapper.writeValueAsString(o);
-        return ResponseEntity.ok(response);
-    }
-
-    private ResponseEntity successResponse() {
-        ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
-        jsonResponse.put("response", "Success");
-        String response = jsonResponse.toString();
-        return ResponseEntity.ok(response);
-    }
-
-    private ResponseEntity badResponse(Exception e) {
-        ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
-        jsonResponse.put("response", "Server error: " + e.getMessage());
-        String response = jsonResponse.toString();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @RequestMapping

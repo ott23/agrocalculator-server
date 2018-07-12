@@ -2,20 +2,20 @@ package net.tngroup.acserver.web.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import net.tngroup.acserver.database.h2.models.Calculator;
-import net.tngroup.acserver.database.h2.models.CalculatorStatus;
-import net.tngroup.acserver.database.h2.models.Task;
-import net.tngroup.acserver.database.h2.services.CalculatorService;
-import net.tngroup.acserver.database.h2.services.CalculatorStatusService;
-import net.tngroup.acserver.database.h2.services.TaskService;
+import net.tngroup.acserver.databases.h2.models.Calculator;
+import net.tngroup.acserver.databases.h2.models.CalculatorStatus;
+import net.tngroup.acserver.databases.h2.models.Task;
+import net.tngroup.acserver.databases.h2.services.CalculatorService;
+import net.tngroup.acserver.databases.h2.services.CalculatorStatusService;
+import net.tngroup.acserver.databases.h2.services.TaskService;
 import net.tngroup.acserver.web.components.CipherComponent;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static net.tngroup.acserver.web.controllers.Responses.*;
 
 @CrossOrigin
 @RestController
@@ -35,26 +35,7 @@ public class CalculatorController {
         this.taskService = taskService;
     }
 
-    private ResponseEntity okResponse(Object o) throws JsonProcessingException {
-        String response = new ObjectMapper().writeValueAsString(o);
-        return ResponseEntity.ok(response);
-    }
-
-    private ResponseEntity successResponse() {
-        ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
-        jsonResponse.put("response", "Success");
-        String response = jsonResponse.toString();
-        return ResponseEntity.ok(response);
-    }
-
-    private ResponseEntity badResponse(Exception e) {
-        ObjectNode jsonResponse = new ObjectMapper().createObjectNode();
-        jsonResponse.put("response", "Server error: " + e.getMessage());
-        String response = jsonResponse.toString();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
-    @RequestMapping
+        @RequestMapping
     public ResponseEntity getList() {
         try {
             List<Calculator> calculatorList = calculatorService.getAll();

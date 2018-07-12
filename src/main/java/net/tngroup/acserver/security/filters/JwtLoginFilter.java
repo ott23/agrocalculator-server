@@ -12,6 +12,9 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -44,12 +47,7 @@ public class JwtLoginFilter extends AbstractAuthenticationProcessingFilter {
                                             HttpServletResponse res,
                                             FilterChain chain,
                                             Authentication auth) {
-
-        String authority = "";
-        Optional<String> optional = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).findFirst();
-        if (optional.isPresent()) {
-            authority = optional.get();
-        }
-        TokenAuthenticationService.addAuthentication(res, auth.getName(), authority);
+        Optional<String> authority = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).findFirst();
+        TokenAuthenticationService.addAuthentication(res, auth.getName(), authority.orElse(null));
     }
 }

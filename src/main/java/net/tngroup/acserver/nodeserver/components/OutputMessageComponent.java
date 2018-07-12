@@ -2,7 +2,7 @@ package net.tngroup.acserver.nodeserver.components;
 
 import io.netty.channel.Channel;
 import net.tngroup.acserver.web.components.CipherComponent;
-import net.tngroup.acserver.database.h2.models.Message;
+import net.tngroup.acserver.databases.h2.models.Message;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

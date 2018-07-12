@@ -15,23 +15,19 @@
         <relativePath/>
     </parent>
 
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>10</java.version>
 
-        <jwt.version>0.9.0</jwt.version>
-        <jaxb.version>2.3.0</jaxb.version>
-
-        <lombok.version>1.18.0</lombok.version>
-
-        <jackson.version>2.9.5</jackson.version>
-        <netty.version>4.1.25.Final</netty.version>
-
         <hibernate-core.version>5.3.1.Final</hibernate-core.version>
         <hibernate-em.version>5.3.1.Final</hibernate-em.version>
         <h2.version>1.4.197</h2.version>
+        <lombok.version>1.18.0</lombok.version>
+        <jackson.version>2.9.5</jackson.version>
+        <jwt.version>0.9.0</jwt.version>
+        <jaxb.version>2.3.0</jaxb.version>
+        <netty.version>4.1.25.Final</netty.version>
     </properties>
 
 
@@ -79,6 +75,25 @@
             <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
 
+        <!-- Hibernate -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+            <version>${hibernate-em.version}</version>
+        </dependency>
+
+        <!-- H2 -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+        </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -105,25 +120,6 @@
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
             <version>${jaxb.version}</version>
-        </dependency>
-
-        <!-- Hibernate -->
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>${hibernate-core.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-            <version>${hibernate-em.version}</version>
-        </dependency>
-
-        <!-- H2 -->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>${h2.version}</version>
         </dependency>
 
         <!-- Netty -->
