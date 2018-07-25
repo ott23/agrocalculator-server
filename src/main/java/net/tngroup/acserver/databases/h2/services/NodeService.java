@@ -1,19 +1,19 @@
 package net.tngroup.acserver.databases.h2.services;
 
-import net.tngroup.acserver.databases.h2.models.Calculator;
+import net.tngroup.acserver.databases.h2.models.Node;
 
 import java.net.SocketAddress;
 import java.util.List;
 
-public interface CalculatorService {
+public interface NodeService {
 
-    List<Calculator> getAll();
-    List<Calculator> getAllByName(String name);
-    List<Calculator> getAllByAddress(SocketAddress address);
+    List<Node> getAll();
+    List<Node> getAllByName(String name);
+    List<Node> getAllByAddress(SocketAddress address);
 
-    Calculator getById(int id);
-    Calculator getByCode(String code);
-    Calculator getByAddressAndConnection(SocketAddress address, boolean connection);
+    Node getById(int id);
+    Node getByCode(String code);
+    Node getByAddressAndConnection(SocketAddress address, boolean connection);
 
     void updateAllStatus(boolean status);
     void updateAllConnection(boolean connection);
@@ -24,7 +24,7 @@ public interface CalculatorService {
     void updateArchiveById(int id, boolean archive);
     void updateConnectionById(int id, boolean connection);
 
-    void save(Calculator calculator);
+    void save(Node node);
 
     void removeById(int id);
 

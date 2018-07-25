@@ -11,15 +11,17 @@ import java.net.InetSocketAddress;
 import java.util.Set;
 
 @Data
-@EqualsAndHashCode(exclude = {"tasks", "calculatorStatuses", "settings"})
-@ToString(exclude = {"tasks", "calculatorStatuses", "settings"})
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property="id", scope = Calculator.class)
+@EqualsAndHashCode(exclude = {"tasks", "nodeStatuses", "settings"})
+@ToString(exclude = {"tasks", "nodeStatuses", "settings"})
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property="id", scope = Node.class)
 @Entity
-public class Calculator {
+public class Node {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    private String type;
 
     private String code;
 
@@ -36,13 +38,13 @@ public class Calculator {
     private boolean archive = false;
 
     //@JsonManagedReference
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "calculator")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "node")
     private Set<Task> tasks;
 
     //@JsonManagedReference
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "calculator")
-    private Set<CalculatorStatus> calculatorStatuses;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "node")
+    private Set<NodeStatus> nodeStatuses;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "calculator")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "node")
     private Set<Setting> settings;
 }

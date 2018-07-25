@@ -6,10 +6,10 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.Getter;
-import net.tngroup.acserver.databases.h2.models.Calculator;
-import net.tngroup.acserver.databases.h2.models.CalculatorStatus;
-import net.tngroup.acserver.databases.h2.services.CalculatorService;
-import net.tngroup.acserver.databases.h2.services.CalculatorStatusService;
+import net.tngroup.acserver.databases.h2.models.Node;
+import net.tngroup.acserver.databases.h2.models.NodeStatus;
+import net.tngroup.acserver.databases.h2.services.NodeService;
+import net.tngroup.acserver.databases.h2.services.NodeStatusService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +24,10 @@ import java.util.Map;
 @Service
 public class StatusComponent {
 
-    private Logger logger = LogManager.getFormatterLogger("ConsoleLogger");
+    private Logger logger = LogManager.getFormatterLogger("CommonLogger");
 
-    private CalculatorService calculatorService;
-    private CalculatorStatusService calculatorStatusService;
+    private NodeService nodeService;
+    private NodeStatusService nodeStatusService;
 
     @Getter
     private ChannelGroup channels;
@@ -35,14 +35,14 @@ public class StatusComponent {
     private Map<SocketAddress, ChannelId> channelMap;
 
     @Autowired
-    public StatusComponent(CalculatorService calculatorService,
-                           CalculatorStatusService calculatorStatusService) {
-        this.calculatorService = calculatorService;
-        this.calculatorStatusService = calculatorStatusService;
+    public StatusComponent(NodeService nodeService,
+                           NodeStatusService nodeStatusService) {
+        this.nodeService = nodeService;
+        this.nodeStatusService = nodeStatusService;
 
-        // Make all calculator not connection on init
-        calculatorService.updateAllConnection(false);
-        calculatorService.updateAllStatus(false);
+        // Make all node not connection on init
+        nodeService.updateAllConnection(false);
+        nodeService.updateAllStatus(false);
 
         channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
         channelMap = new HashMap<>();
@@ -69,37 +69,38 @@ public class StatusComponent {
         channels.remove(channel);
         channelMap.remove(channel.remoteAddress());
 
-        // Set status "Not connection" if calculator exists
-        Calculator calculator = calculatorService.getByAddressAndConnection(channel.remoteAddress(), true);
-        if (calculator != null) {
-            calculatorService.updateConnectionById(calculator.getId(), false);
-            calculatorStatusService.save(new CalculatorStatus("DISCONNECTED", new Date(), calculator));
+        // Set status "Not connection" if node exists
+        Node node = nodeService.getByAddressAndConnection(channel.remoteAddress(), true);
+        if (node != null) {
+            nodeService.updateConnectionById(node.getId(), false);
+            nodeStatusService.save(new NodeStatus("DISCONNECTED", new Date(), node));
         }
     }
 
     /*
     Check code
     */
-    Calculator checkCalculator(String code, InetSocketAddress address) {
-        // Make all calculator with the same address archived
-        calculatorService.updateAllArchiveByAddress(address, true);
+    Node checkNode(String code, String type, InetSocketAddress address) {
+        // Make all node with the same address archived
+        nodeService.updateAllArchiveByAddress(address, true);
 
-        Calculator calculator = calculatorService.getByCode(code);
+        Node node = nodeService.getByCode(code);
 
-        if (calculator != null) {
-            if (!calculator.getAddress().equals(address)) calculator.setAddress(address);
+        if (node != null) {
+            if (!node.getAddress().equals(address)) node.setAddress(address);
         } else {
-            calculator = new Calculator();
-            calculator.setCode(code);
-            calculator.setAddress(address);
+            node = new Node();
+            node.setCode(code);
+            node.setType(type);
+            node.setAddress(address);
         }
 
-        calculator.setConnection(true);
-        calculator.setArchive(false);
+        node.setConnection(true);
+        node.setArchive(false);
 
-        calculatorService.save(calculator);
+        nodeService.save(node);
 
-        return calculator;
+        return node;
     }
 
 

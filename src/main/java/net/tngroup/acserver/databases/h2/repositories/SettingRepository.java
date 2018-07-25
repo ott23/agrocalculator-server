@@ -10,8 +10,8 @@ import java.util.Optional;
 @Repository
 public interface SettingRepository extends JpaRepository<Setting, Integer> {
 
-    Optional<Setting> findByNameAndCalculatorId(String name, Integer id);
+    Optional<Setting> findByNameAndNodeId(String name, Integer id);
 
-    List<Setting> findAllByCalculatorId(Integer id);
+    List<Setting> findAllByNodeId(Integer id);
 
 }

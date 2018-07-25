@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.tngroup.acserver.databases.cassandra.models.Client;
 import net.tngroup.acserver.databases.cassandra.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,13 +18,13 @@ import java.util.UUID;
 import static net.tngroup.acserver.web.controllers.Responses.*;
 
 @RestController
+@Lazy
 @RequestMapping("/client")
 public class ClientController {
 
     private ClientService clientService;
 
-    @Autowired
-    public ClientController(ClientService clientService) {
+    public ClientController(@Lazy ClientService clientService) {
         this.clientService = clientService;
     }
 

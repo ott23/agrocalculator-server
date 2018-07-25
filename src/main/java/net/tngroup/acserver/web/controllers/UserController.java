@@ -3,7 +3,6 @@ package net.tngroup.acserver.web.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.tngroup.acserver.databases.h2.models.User;
 import net.tngroup.acserver.databases.h2.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,9 +17,7 @@ public class UserController {
 
     private UserService userService;
 
-    @Autowired
-    public UserController(
-            UserService userService) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 

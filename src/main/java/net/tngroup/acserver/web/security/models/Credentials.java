@@ -1,4 +1,4 @@
-package net.tngroup.acserver.security.models;
+package net.tngroup.acserver.web.security.models;
 
 import lombok.Data;
 

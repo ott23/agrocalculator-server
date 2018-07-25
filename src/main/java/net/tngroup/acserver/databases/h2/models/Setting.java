@@ -27,7 +27,7 @@ public class Setting {
     private String value;
 
     @ManyToOne
-    @JoinColumn(name = "calculator_id")
-    private Calculator calculator;
+    @JoinColumn(name = "node_id")
+    private Node node;
 
 }

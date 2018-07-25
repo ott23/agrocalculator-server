@@ -1,6 +1,6 @@
-package net.tngroup.acserver.security.filters;
+package net.tngroup.acserver.web.security.filters;
 
-import net.tngroup.acserver.security.services.TokenAuthenticationService;
+import net.tngroup.acserver.web.security.services.TokenAuthenticationService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,13 +33,15 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
         Authentication authentication = TokenAuthenticationService.getAuthentication((HttpServletRequest) request, userDetailsService);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        if (authentication.getDetails() != null) {
+        try {
             Long expiration = (Long) authentication.getDetails();
             Long currentTime = System.currentTimeMillis();
             if (expiration - currentTime < TokenAuthenticationService.EXPIRATION_TIME * 0.8) {
                 Optional<String> authority = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).findFirst();
                 TokenAuthenticationService.addAuthentication((HttpServletResponse) response, authentication.getName(), authority.orElse(null));
             }
+        } catch (NullPointerException e) {
+            // Skip after null exception
         }
 
         filterChain.doFilter(request, response);

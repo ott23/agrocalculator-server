@@ -21,7 +21,7 @@ public class Message {
     private boolean encoded = false;
 
     public Message(Task task) {
-        code = task.getCalculator().getCode();
+        code = task.getNode().getCode();
         type = task.getType();
         value = task.getValue();
         id = task.getId();

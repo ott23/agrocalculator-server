@@ -13,7 +13,7 @@ import java.util.Base64;
 @Component
 public class OutputMessageComponent {
 
-    private Logger logger = LogManager.getFormatterLogger("ConsoleLogger");
+    private Logger logger = LogManager.getFormatterLogger("CommonLogger");
 
     private CipherComponent cipherComponent;
 

@@ -11,9 +11,9 @@ import java.util.Date;
 
 @Data
 @NoArgsConstructor
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property="id", scope = CalculatorStatus.class)
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property="id", scope = NodeStatus.class)
 @Entity
-public class CalculatorStatus {
+public class NodeStatus {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,13 +25,12 @@ public class CalculatorStatus {
     private Date dateTime;
 
     @ManyToOne
-    @JsonIgnore
-    @JoinColumn(name = "calculator_id", nullable = false)
-    private Calculator calculator;
+    @JoinColumn(name = "node_id", nullable = false)
+    private Node node;
 
-    public CalculatorStatus(String status, Date dateTime, Calculator calculator) {
+    public NodeStatus(String status, Date dateTime, Node node) {
         this.status = status;
         this.dateTime = dateTime;
-        this.calculator = calculator;
+        this.node = node;
     }
 }

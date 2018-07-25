@@ -1,4 +1,4 @@
-package net.tngroup.acserver.security.services;
+package net.tngroup.acserver.web.security.services;
 
 import net.tngroup.acserver.databases.h2.models.User;
 import net.tngroup.acserver.databases.h2.services.UserService;

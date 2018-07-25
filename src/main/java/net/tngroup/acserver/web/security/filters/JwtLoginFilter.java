@@ -1,8 +1,8 @@
-package net.tngroup.acserver.security.filters;
+package net.tngroup.acserver.web.security.filters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.tngroup.acserver.security.models.Credentials;
-import net.tngroup.acserver.security.services.TokenAuthenticationService;
+import net.tngroup.acserver.web.security.models.Credentials;
+import net.tngroup.acserver.web.security.services.TokenAuthenticationService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -12,9 +12,6 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;

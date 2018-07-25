@@ -7,6 +7,7 @@ import net.tngroup.acserver.databases.cassandra.models.Unit;
 import net.tngroup.acserver.databases.cassandra.service.ClientService;
 import net.tngroup.acserver.databases.cassandra.service.UnitService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,15 +20,15 @@ import java.util.UUID;
 import static net.tngroup.acserver.web.controllers.Responses.*;
 
 @RestController
+@Lazy
 @RequestMapping("/unit")
 public class UnitController {
 
     private UnitService unitService;
     private ClientService clientService;
 
-    @Autowired
-    public UnitController(UnitService unitService,
-                          ClientService clientService) {
+    public UnitController(@Lazy UnitService unitService,
+                          @Lazy ClientService clientService) {
         this.unitService = unitService;
         this.clientService = clientService;
     }

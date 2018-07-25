@@ -21,10 +21,9 @@ public class Task {
     private int id;
 
     @NonNull
-    //@JsonBackReference
     @ManyToOne
-    @JoinColumn(name = "calculator_id", nullable = false)
-    private Calculator calculator;
+    @JoinColumn(name = "node_id", nullable = false)
+    private Node node;
 
     @NonNull
     private String type;

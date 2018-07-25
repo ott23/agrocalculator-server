@@ -1,4 +1,4 @@
-package net.tngroup.acserver.security.services;
+package net.tngroup.acserver.web.security.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;

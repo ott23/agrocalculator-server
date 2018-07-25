@@ -25,8 +25,8 @@ public class SettingServiceImpl implements SettingService {
 
     @Override
     public List<Setting> getAllByCalculatorId(int id) {
-        List<Setting> settingList = settingRepository.findAllByCalculatorId(null);
-        List<Setting> calculatorSettingList = settingRepository.findAllByCalculatorId(id);
+        List<Setting> settingList = settingRepository.findAllByNodeId(null);
+        List<Setting> calculatorSettingList = settingRepository.findAllByNodeId(id);
 
         return settingList.stream().map(setting -> calculatorSettingList
                 .stream()
@@ -42,7 +42,7 @@ public class SettingServiceImpl implements SettingService {
 
     @Override
     public Setting getByNameAndCalculatorId(String name, Integer id) {
-        return settingRepository.findByNameAndCalculatorId(name, id).orElse(null);
+        return settingRepository.findByNameAndNodeId(name, id).orElse(null);
     }
 
     @Override

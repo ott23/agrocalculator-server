@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.Channel;
 import net.tngroup.acserver.web.components.CipherComponent;
 import net.tngroup.acserver.databases.h2.models.*;
-import net.tngroup.acserver.databases.h2.services.CalculatorService;
-import net.tngroup.acserver.databases.h2.services.CalculatorStatusService;
+import net.tngroup.acserver.databases.h2.services.NodeService;
+import net.tngroup.acserver.databases.h2.services.NodeStatusService;
 import net.tngroup.acserver.databases.h2.services.SettingService;
 import net.tngroup.acserver.databases.h2.services.TaskService;
 import org.apache.logging.log4j.LogManager;
@@ -28,10 +28,10 @@ import java.util.regex.Pattern;
 @Component
 public class InputMessageComponent {
 
-    private Logger logger = LogManager.getFormatterLogger("ConsoleLogger");
+    private Logger logger = LogManager.getFormatterLogger("CommonLogger");
 
-    private CalculatorService calculatorService;
-    private CalculatorStatusService calculatorStatusService;
+    private NodeService nodeService;
+    private NodeStatusService nodeStatusService;
     private TaskService taskService;
     private SettingService settingService;
     private StatusComponent statusComponent;
@@ -39,15 +39,15 @@ public class InputMessageComponent {
     private CipherComponent cipherComponent;
 
     @Autowired
-    public InputMessageComponent(CalculatorService calculatorService,
-                                 CalculatorStatusService calculatorStatusService,
+    public InputMessageComponent(NodeService nodeService,
+                                 NodeStatusService nodeStatusService,
                                  TaskService taskService,
                                  SettingService settingService,
                                  StatusComponent statusComponent,
                                  OutputMessageComponent outputMessageComponent,
                                  CipherComponent cipherComponent) {
-        this.calculatorService = calculatorService;
-        this.calculatorStatusService = calculatorStatusService;
+        this.nodeService = nodeService;
+        this.nodeStatusService = nodeStatusService;
         this.taskService = taskService;
         this.settingService = settingService;
         this.statusComponent = statusComponent;
@@ -111,10 +111,10 @@ public class InputMessageComponent {
      */
     private Message decMessage(String msg, InetSocketAddress address) throws Exception {
         try {
-            Calculator calculator = calculatorService.getByAddressAndConnection(address, true);
-            if (calculator == null) {
-                List<Calculator> calculators = calculatorService.getAllByAddress(address);
-                for (Calculator c : calculators) {
+            Node node = nodeService.getByAddressAndConnection(address, true);
+            if (node == null) {
+                List<Node> nodes = nodeService.getAllByAddress(address);
+                for (Node c : nodes) {
                     try {
                         msg = cipherComponent.decodeDes(msg, c.getKey());
                         return new Message(msg);
@@ -122,9 +122,9 @@ public class InputMessageComponent {
                         // Key is not correct
                     }
                 }
-                throw new Exception("calculator not found");
+                throw new Exception("node not found");
             } else {
-                msg = cipherComponent.decodeDes(msg, calculator.getKey());
+                msg = cipherComponent.decodeDes(msg, node.getKey());
                 return new Message(msg);
             }
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
@@ -167,48 +167,48 @@ public class InputMessageComponent {
     }
 
     private void keyRequestEvent(Message message, InetSocketAddress address) {
-        Calculator calculator = statusComponent.checkCalculator(message.getCode(), address);
-        calculatorService.updateKeyById(calculator.getId(), null);
-        calculatorStatusService.save(new CalculatorStatus("CONNECTED", new Date(), calculator));
+        Node node = statusComponent.checkNode(message.getCode(), message.getValue(), address);
+        nodeService.updateKeyById(node.getId(), null);
+        nodeStatusService.save(new NodeStatus("CONNECTED", new Date(), node));
     }
 
     private void propertiesRequestEvent(Message message, InetSocketAddress address) {
         try {
-            Calculator calculator = statusComponent.checkCalculator(message.getCode(), address);
-            List<Setting> settingList = settingService.getAllByCalculatorId(calculator.getId());
+            Node node = statusComponent.checkNode(message.getCode(), message.getValue(), address);
+            List<Setting> settingList = settingService.getAllByCalculatorId(node.getId());
             String json = new ObjectMapper().writeValueAsString(settingList);
-            taskService.save(new Task(calculator, "settings", json));
+            taskService.save(new Task(node, "settings", json));
         } catch (JsonProcessingException e) {
             logger.error("Error during json forming: %s", e.getMessage());
         }
     }
 
     private void statusEvent(Message message, InetSocketAddress address) {
-        Calculator calculator = statusComponent.checkCalculator(message.getCode(), address);
-        if (message.getId().equals(1)) calculatorService.updateStatusById(calculator.getId(), true);
-        else calculatorService.updateStatusById(calculator.getId(), false);
-        calculatorStatusService.save(new CalculatorStatus("CONNECTED", new Date(), calculator));
+        Node node = statusComponent.checkNode(message.getCode(), message.getValue(), address);
+        if (message.getId().equals(1)) nodeService.updateStatusById(node.getId(), true);
+        else nodeService.updateStatusById(node.getId(), false);
+        nodeStatusService.save(new NodeStatus("CONNECTED", new Date(), node));
     }
 
     private void confirmEvent(Message message, InetSocketAddress address) throws Exception {
         taskService.updateConfirmedById(message.getId(), true);
 
         Task task = taskService.getById(message.getId());
-        Calculator calculator = calculatorService.getByAddressAndConnection(address, true);
+        Node node = nodeService.getByAddressAndConnection(address, true);
 
         // Start confirm event
         if (task.getValue().equals("start")) {
-            calculatorService.updateStatusById(calculator.getId(), true);
+            nodeService.updateStatusById(node.getId(), true);
             return;
         }
         // Stop confirm event
         if (task.getValue().equals("stop")) {
-            calculatorService.updateStatusById(calculator.getId(), false);
+            nodeService.updateStatusById(node.getId(), false);
             return;
         }
         // Destroy confirm event
         if (task.getValue().equals("destroy")) {
-            calculatorService.updateArchiveById(calculator.getId(), true);
+            nodeService.updateArchiveById(node.getId(), true);
             return;
         }
         // Key confirm event

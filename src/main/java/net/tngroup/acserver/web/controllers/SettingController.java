@@ -3,7 +3,6 @@ package net.tngroup.acserver.web.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.tngroup.acserver.databases.h2.models.Setting;
 import net.tngroup.acserver.databases.h2.services.SettingService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +17,6 @@ public class SettingController {
 
     private SettingService settingService;
 
-    @Autowired
     public SettingController(
             SettingService settingService) {
         this.settingService = settingService;
@@ -34,7 +32,7 @@ public class SettingController {
         }
     }
 
-    @RequestMapping("/getByCalculator/{id}")
+    @RequestMapping("/getByNode/{id}")
     public ResponseEntity getListByCalculatorId(@PathVariable int id) {
         try {
             List<Setting> settingList = settingService.getAllByCalculatorId(id);
@@ -44,16 +42,16 @@ public class SettingController {
         }
     }
 
-    @RequestMapping("/setForCalculator")
+    @RequestMapping("/setForNode")
     public ResponseEntity setForCalculator(@RequestBody String jsonRequest) {
         try {
             Setting inputSetting = new ObjectMapper().readValue(jsonRequest, Setting.class);
-            Setting setting = settingService.getByNameAndCalculatorId(inputSetting.getName(), inputSetting.getCalculator().getId());
+            Setting setting = settingService.getByNameAndCalculatorId(inputSetting.getName(), inputSetting.getNode().getId());
             if (setting != null) {
                 setting.setValue(inputSetting.getValue());
             } else {
                 setting = new Setting(inputSetting.getName(), inputSetting.getValue());
-                setting.setCalculator(inputSetting.getCalculator());
+                setting.setNode(inputSetting.getNode());
             }
             settingService.save(setting);
             return successResponse();
@@ -77,7 +75,7 @@ public class SettingController {
     public ResponseEntity deleteById(@PathVariable int id) {
         try {
             Setting setting = settingService.getById(id);
-            if (setting != null && setting.getCalculator() != null) {
+            if (setting != null && setting.getNode() != null) {
                 settingService.deleteById(id);
             } else {
                 throw new Exception("Setting not found");

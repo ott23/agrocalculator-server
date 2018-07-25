@@ -1,7 +1,7 @@
 package net.tngroup.acserver.databases.h2.models;
 
 import lombok.Data;
-import net.tngroup.acserver.security.services.EncoderService;
+import net.tngroup.acserver.web.security.services.EncoderService;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

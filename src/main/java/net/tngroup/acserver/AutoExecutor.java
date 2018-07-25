@@ -1,22 +1,29 @@
-package net.tngroup.acserver.nodeserver;
+package net.tngroup.acserver;
 
+import net.tngroup.acserver.nodeserver.NodeServer;
 import net.tngroup.acserver.nodeserver.components.TaskComponent;
 import net.tngroup.acserver.databases.h2.models.Setting;
 import net.tngroup.acserver.databases.h2.services.SettingService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 
 @Component
-public class NodeServerAutoExecutor implements ApplicationRunner {
+@PropertySource("classpath:settings.properties")
+public class AutoExecutor implements ApplicationRunner {
 
-    private Logger logger = LogManager.getFormatterLogger("ConsoleLogger");
+    @Value("${settings.list}")
+    private String settingsString;
+
+    private Logger logger = LogManager.getFormatterLogger("CommonLogger");
 
     private NodeServer nodeServer;
     private Environment env;
@@ -24,10 +31,10 @@ public class NodeServerAutoExecutor implements ApplicationRunner {
     private TaskComponent taskComponent;
 
     @Autowired
-    public NodeServerAutoExecutor(NodeServer nodeServer,
-                                  Environment env,
-                                  SettingService settingService,
-                                  TaskComponent taskComponent) {
+    public AutoExecutor(NodeServer nodeServer,
+                        Environment env,
+                        SettingService settingService,
+                        TaskComponent taskComponent) {
         this.nodeServer = nodeServer;
         this.env = env;
         this.settingService = settingService;
@@ -36,32 +43,17 @@ public class NodeServerAutoExecutor implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-
-        loadProperties();
-
+        loadDefaultProperties();
         nodeServer.createBootstrap();
         logger.info("Node server started");
-
         taskComponent.start();
     }
 
-    private void loadProperties() {
-        String[] calculatorProperties = {
-                "kafka.bootstrap-servers",
-                "kafka.group-id",
-                "kafka.poll-timeout",
-                "kafka.send-timeout",
-                "kafka.test-timeout",
-                "kafka.tasks-topics",
-                "kafka.results-topic-prefix",
-                "pool.max-count",
-                "pool.timeout",
-                "rest.url"
-        };
-
+    private void loadDefaultProperties() {
+        String[] calculatorProperties = settingsString.split(",");
         Arrays.stream(calculatorProperties).forEach((p) -> {
-            Setting setting = settingService.getByNameAndCalculatorId(p, null);
-            if (setting == null) settingService.save(new Setting(p, env.getProperty("default." + p)));
+            Setting setting = settingService.getByNameAndCalculatorId(p.trim(), null);
+            if (setting == null) settingService.save(new Setting(p.trim(), env.getProperty(p.trim())));
         });
     }
 

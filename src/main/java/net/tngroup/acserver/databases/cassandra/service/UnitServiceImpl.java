@@ -2,7 +2,7 @@ package net.tngroup.acserver.databases.cassandra.service;
 
 import net.tngroup.acserver.databases.cassandra.models.Unit;
 import net.tngroup.acserver.databases.cassandra.repositories.UnitRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -12,8 +12,7 @@ public class UnitServiceImpl implements UnitService {
 
     private UnitRepository unitRepository;
 
-    @Autowired
-    public UnitServiceImpl(UnitRepository unitRepository) {
+    public UnitServiceImpl(@Lazy UnitRepository unitRepository) {
         this.unitRepository = unitRepository;
     }
 
