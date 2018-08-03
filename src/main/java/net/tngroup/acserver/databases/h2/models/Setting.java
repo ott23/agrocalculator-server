@@ -1,6 +1,7 @@
 package net.tngroup.acserver.databases.h2.models;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,7 @@ public class Setting {
     @NonNull
     private String value;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "node_id")
     private Node node;

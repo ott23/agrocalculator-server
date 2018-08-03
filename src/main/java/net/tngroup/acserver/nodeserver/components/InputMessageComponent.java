@@ -179,6 +179,7 @@ public class InputMessageComponent {
             String json = new ObjectMapper().writeValueAsString(settingList);
             taskService.save(new Task(node, "settings", json));
         } catch (JsonProcessingException e) {
+            e.printStackTrace();
             logger.error("Error during json forming: %s", e.getMessage());
         }
     }
