@@ -56,6 +56,7 @@ public class SettingController {
             settingService.save(setting);
             return successResponse();
         } catch (Exception e) {
+            e.printStackTrace();
             return badResponse(e);
         }
     }

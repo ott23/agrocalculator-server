@@ -30,9 +30,11 @@ public class SettingServiceImpl implements SettingService {
 
         return settingList.stream().map(setting -> calculatorSettingList
                 .stream()
-                .filter(calculatorSetting -> setting.getName().equals(calculatorSetting.getName()))
+                .filter(s -> setting.getName().equals(s.getName()))
                 .findFirst()
-                .orElse(setting)).collect(Collectors.toList());
+                .orElse(setting))
+                .peek(s -> s.setNode(null))
+                .collect(Collectors.toList());
     }
 
     @Override

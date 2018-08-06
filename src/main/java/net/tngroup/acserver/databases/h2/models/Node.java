@@ -1,6 +1,7 @@
 package net.tngroup.acserver.databases.h2.models;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -45,6 +46,7 @@ public class Node {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "node")
     private Set<NodeStatus> nodeStatuses;
 
+    @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "node")
     private Set<Setting> settings;
 }

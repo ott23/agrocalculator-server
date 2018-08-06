@@ -25,7 +25,7 @@ public class OutputMessageComponent {
     /*
     Handler of message sending
     */
-    public void sendMessage(Message message, Channel channel, String key) {
+    void sendMessage(Message message, Channel channel, String key) {
         try {
             logger.info("Sending message to  '%s': %s", channel.remoteAddress().toString(), message.getType());
 

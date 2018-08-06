@@ -27,7 +27,6 @@ public class Setting {
     @NonNull
     private String value;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "node_id")
     private Node node;
