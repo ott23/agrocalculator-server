@@ -12,6 +12,7 @@ import net.tngroup.acserver.web.components.CipherComponent;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 import static net.tngroup.acserver.web.controllers.Responses.*;
@@ -34,7 +35,7 @@ public class NodeController {
     }
 
         @RequestMapping
-    public ResponseEntity getList() {
+    public ResponseEntity getList(HttpServletRequest request) {
         try {
             List<Node> nodeList = nodeService.getAll();
             return okResponse(nodeList);
@@ -44,7 +45,7 @@ public class NodeController {
     }
 
     @RequestMapping("/getAllByName/{name}")
-    public ResponseEntity getByName(@PathVariable String name) {
+    public ResponseEntity getByName(HttpServletRequest request, @PathVariable String name) {
         try {
             List<Node> nodeList = nodeService.getAllByName(name);
             return okResponse(nodeList);
@@ -54,7 +55,7 @@ public class NodeController {
     }
 
     @RequestMapping("/status/{id}")
-    public ResponseEntity getStatusList(@PathVariable int id) {
+    public ResponseEntity getStatusList(HttpServletRequest request, @PathVariable int id) {
         try {
             List<NodeStatus> nodeStatusList = nodeStatusService.getByCalculatorId(id);
             return okResponse(nodeStatusList);
@@ -64,7 +65,7 @@ public class NodeController {
     }
 
     @RequestMapping("/sendKey/{id}")
-    public ResponseEntity sendNewKeyById(@PathVariable int id) {
+    public ResponseEntity sendNewKeyById(HttpServletRequest request, @PathVariable int id) {
         try {
             nodeService.updateKeyById(id, CipherComponent.generateDesKey());
             Node node = nodeService.getById(id);
@@ -76,7 +77,7 @@ public class NodeController {
     }
 
     @RequestMapping("/set")
-    public ResponseEntity set(@RequestBody String jsonRequest) {
+    public ResponseEntity set(HttpServletRequest request, @RequestBody String jsonRequest) {
         try {
             Node node = new ObjectMapper().readValue(jsonRequest, Node.class);
             nodeService.save(node);
@@ -87,7 +88,7 @@ public class NodeController {
     }
 
     @RequestMapping("/switch/{id}")
-    public ResponseEntity switchById(@PathVariable int id) {
+    public ResponseEntity switchById(HttpServletRequest request, @PathVariable int id) {
         try {
             Node node = nodeService.getById(id);
             taskService.save(new Task(node, "command", node.isStatus() ? "stop" : "start"));
@@ -98,7 +99,7 @@ public class NodeController {
     }
 
     @RequestMapping("/shutdown/{id}")
-    public ResponseEntity shutdownById(@PathVariable int id) {
+    public ResponseEntity shutdownById(HttpServletRequest request, @PathVariable int id) {
         try {
             Node node = nodeService.getById(id);
             taskService.save(new Task(node, "command", "shutdown"));
@@ -109,7 +110,7 @@ public class NodeController {
     }
 
     @RequestMapping("/kill/{id}")
-    public ResponseEntity killById(@PathVariable int id) {
+    public ResponseEntity killById(HttpServletRequest request, @PathVariable int id) {
         try {
             Node node = nodeService.getById(id);
             taskService.save(new Task(node, "command", "destroy"));
@@ -120,7 +121,7 @@ public class NodeController {
     }
 
     @RequestMapping("/delete/{id}")
-    public ResponseEntity deleteById(@PathVariable int id) {
+    public ResponseEntity deleteById(HttpServletRequest request, @PathVariable int id) {
         try {
             Node node = nodeService.getById(id);
             nodeService.removeById(node.getId());

@@ -1,4 +1,4 @@
-package net.tngroup.acserver.databases.cassandra.service;
+package net.tngroup.acserver.databases.cassandra.services;
 
 import net.tngroup.acserver.databases.cassandra.models.Client;
 import net.tngroup.acserver.databases.cassandra.repositories.ClientRepository;

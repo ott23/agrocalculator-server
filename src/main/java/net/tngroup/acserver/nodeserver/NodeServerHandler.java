@@ -21,21 +21,20 @@ public class NodeServerHandler extends SimpleChannelInboundHandler<String> {
     }
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, String msg) {
+    public void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
         inputMessageComponent.readMessage(ctx.channel(), msg);
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) { statusComponent.connected(ctx.channel()); }
+    public void channelActive(ChannelHandlerContext ctx) { statusComponent.connected(ctx); }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        statusComponent.disconnected(ctx.channel());
+        statusComponent.disconnected(ctx);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
         ctx.close();
     }
 

@@ -38,15 +38,12 @@ public class Node {
 
     private boolean archive = false;
 
-    //@JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "node")
     private Set<Task> tasks;
 
-    //@JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "node")
     private Set<NodeStatus> nodeStatuses;
 
-    @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "node")
     private Set<Setting> settings;
 }

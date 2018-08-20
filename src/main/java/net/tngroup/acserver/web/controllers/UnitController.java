@@ -4,9 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.tngroup.acserver.databases.cassandra.models.Client;
 import net.tngroup.acserver.databases.cassandra.models.Unit;
-import net.tngroup.acserver.databases.cassandra.service.ClientService;
-import net.tngroup.acserver.databases.cassandra.service.UnitService;
-import org.springframework.beans.factory.annotation.Autowired;
+import net.tngroup.acserver.databases.cassandra.services.ClientService;
+import net.tngroup.acserver.databases.cassandra.services.UnitService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +34,7 @@ public class UnitController {
     }
 
     @RequestMapping
-    public ResponseEntity getList() {
+    public ResponseEntity getList(HttpServletRequest request) {
         try {
             List<Unit> unitList = unitService.getAll();
             return okResponse(unitList);
@@ -44,12 +44,12 @@ public class UnitController {
     }
 
     @RequestMapping("/save")
-    public ResponseEntity save(@RequestBody String jsonRequest) {
+    public ResponseEntity save(HttpServletRequest request, @RequestBody String jsonRequest) {
         try {
             Unit unit = new ObjectMapper().readValue(jsonRequest, Unit.class);
 
-            List<Unit> unitList = unitService.getAllByNameOrImei(unit.getName(), unit.getImei());
-            if (unitList.size() == 1 && !unitList.get(0).getId().equals(unit.getId()) || unitList.size() > 1) return conflictResponse();
+            List<Unit> unitList = unitService.getAllByImei(unit.getImei());
+            if (unitList.size() == 1 && !unitList.get(0).getId().equals(unit.getId()) || unitList.size() > 1) return conflictResponse("imei");
 
             Client client = clientService.getById(unit.getClient());
             if (client == null) return failedDependencyResponse();
@@ -64,7 +64,7 @@ public class UnitController {
     }
 
     @RequestMapping("/delete/{id}")
-    public ResponseEntity deleteById(@PathVariable UUID id) {
+    public ResponseEntity deleteById(HttpServletRequest request, @PathVariable UUID id) {
         try {
             unitService.deleteById(id);
             return successResponse();

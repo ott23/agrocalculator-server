@@ -1,4 +1,4 @@
-package net.tngroup.acserver.databases.cassandra.service;
+package net.tngroup.acserver.databases.cassandra.services;
 
 import net.tngroup.acserver.databases.cassandra.models.Unit;
 
@@ -9,7 +9,7 @@ public interface UnitService {
 
     List<Unit> getAll();
 
-    List<Unit> getAllByNameOrImei(String name, String imei);
+    List<Unit> getAllByImei(String imei);
 
     void save(Unit unit);
 

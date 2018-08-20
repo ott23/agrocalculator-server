@@ -6,6 +6,7 @@ import net.tngroup.acserver.databases.h2.services.SettingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 import static net.tngroup.acserver.web.controllers.Responses.*;
@@ -23,7 +24,7 @@ public class SettingController {
     }
 
     @RequestMapping
-    public ResponseEntity getList() {
+    public ResponseEntity getList(HttpServletRequest request) {
         try {
             List<Setting> settingList = settingService.getAll();
             return okFullResponse(settingList);
@@ -33,7 +34,7 @@ public class SettingController {
     }
 
     @RequestMapping("/getByNode/{id}")
-    public ResponseEntity getListByCalculatorId(@PathVariable int id) {
+    public ResponseEntity getListByCalculatorId(HttpServletRequest request, @PathVariable int id) {
         try {
             List<Setting> settingList = settingService.getAllByCalculatorId(id);
             return okResponse(settingList);
@@ -43,7 +44,7 @@ public class SettingController {
     }
 
     @RequestMapping("/setForNode")
-    public ResponseEntity setForCalculator(@RequestBody String jsonRequest) {
+    public ResponseEntity setForCalculator(HttpServletRequest request, @RequestBody String jsonRequest) {
         try {
             Setting inputSetting = new ObjectMapper().readValue(jsonRequest, Setting.class);
             Setting setting = settingService.getByNameAndCalculatorId(inputSetting.getName(), inputSetting.getNode().getId());
@@ -62,7 +63,7 @@ public class SettingController {
     }
 
     @RequestMapping("/set")
-    public ResponseEntity set(@RequestBody String jsonRequest) {
+    public ResponseEntity set(HttpServletRequest request, @RequestBody String jsonRequest) {
         try {
             Setting setting = new ObjectMapper().readValue(jsonRequest, Setting.class);
             settingService.save(setting);
@@ -73,7 +74,7 @@ public class SettingController {
     }
 
     @RequestMapping("/delete/{id}")
-    public ResponseEntity deleteById(@PathVariable int id) {
+    public ResponseEntity deleteById(HttpServletRequest request, @PathVariable int id) {
         try {
             Setting setting = settingService.getById(id);
             if (setting != null && setting.getNode() != null) {

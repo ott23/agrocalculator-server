@@ -1,6 +1,7 @@
 package net.tngroup.acserver.nodeserver.components;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelId;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -51,8 +52,8 @@ public class StatusComponent {
     /*
     Event of connection
      */
-    public void connected(Channel channel) {
-        logger.info("Client with address '%s': connected", channel.remoteAddress().toString());
+    public void connected(ChannelHandlerContext ctx) {
+        Channel channel = ctx.channel();
 
         // Add to channel arrays
         channels.add(channel);
@@ -62,8 +63,8 @@ public class StatusComponent {
     /*
     Event of disconnection
      */
-    public void disconnected(Channel channel) {
-        logger.info("Client with address '%s': disconnected", channel.remoteAddress().toString());
+    public void disconnected(ChannelHandlerContext ctx) {
+        Channel channel = ctx.channel();
 
         // Remove from channel arrays
         channels.remove(channel);
@@ -75,6 +76,9 @@ public class StatusComponent {
             nodeService.updateConnectionById(node.getId(), false);
             nodeStatusService.save(new NodeStatus("DISCONNECTED", new Date(), node));
         }
+
+        // Context closing
+        ctx.close();
     }
 
     /*

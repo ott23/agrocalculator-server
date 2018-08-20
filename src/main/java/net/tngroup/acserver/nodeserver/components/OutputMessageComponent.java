@@ -18,14 +18,14 @@ public class OutputMessageComponent {
     private CipherComponent cipherComponent;
 
     @Autowired
-    private OutputMessageComponent(CipherComponent cipherComponent) {
+    public OutputMessageComponent(CipherComponent cipherComponent) {
         this.cipherComponent = cipherComponent;
     }
 
     /*
     Handler of message sending
     */
-    void sendMessage(Message message, Channel channel, String key) {
+    public void sendMessage(Channel channel, String key, Message message) {
         try {
             logger.info("Sending message to  '%s': %s", channel.remoteAddress().toString(), message.getType());
 
@@ -41,7 +41,7 @@ public class OutputMessageComponent {
     }
 
     void sendMessageWrongMessage(Channel channel) {
-        sendMessage(new Message(null, "wrong message", null, null), channel, null);
+        sendMessage(channel, null, new Message(null, "wrong message", null, null));
     }
 
 }

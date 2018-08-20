@@ -3,7 +3,10 @@ package net.tngroup.acserver.web.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.tngroup.acserver.databases.cassandra.models.Client;
+import net.tngroup.acserver.databases.cassandra.models.Geozone;
 import net.tngroup.acserver.databases.cassandra.services.ClientService;
+import net.tngroup.acserver.databases.cassandra.services.GeozoneService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,21 +21,24 @@ import java.util.UUID;
 import static net.tngroup.acserver.web.controllers.Responses.*;
 
 @RestController
-@Lazy
-@RequestMapping("/client")
-public class ClientController {
+@RequestMapping("/geozone")
+public class GeozoneController {
 
+    private GeozoneService geozoneService;
     private ClientService clientService;
 
-    public ClientController(@Lazy ClientService clientService) {
+    @Autowired
+    public GeozoneController(@Lazy ClientService clientService,
+                             @Lazy GeozoneService geozoneService) {
+        this.geozoneService = geozoneService;
         this.clientService = clientService;
     }
 
     @RequestMapping
     public ResponseEntity getList(HttpServletRequest request) {
         try {
-            List<Client> clientList = clientService.getAll();
-            return okResponse(clientList);
+            List<Geozone> geozoneList = geozoneService.getAll();
+            return okResponse(geozoneList);
         } catch (JsonProcessingException e) {
             return badResponse(e);
         }
@@ -40,15 +46,22 @@ public class ClientController {
 
     @RequestMapping("/save")
     public ResponseEntity save(HttpServletRequest request, @RequestBody String jsonRequest) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
         try {
-            Client client = new ObjectMapper().readValue(jsonRequest, Client.class);
+            Geozone geozone = objectMapper.readValue(jsonRequest, Geozone.class);
 
-            List<Client> clientList = clientService.getAllByName(client.getName());
-            if (clientList.size() == 1 && !clientList.get(0).getId().equals(client.getId()) || clientList.size() > 1)
-                return Responses.conflictResponse("name");
+            try {
+                objectMapper.readTree(geozone.getGeometry());
+            } catch (Exception e) {
+                throw new Exception("Json not valid");
+            }
 
-            if (client.getId() == null) client.setId(UUID.randomUUID());
-            clientService.save(client);
+            Client client = clientService.getById(geozone.getClient());
+            if (client == null) return failedDependencyResponse();
+            if (geozone.getId() == null) geozone.setId(UUID.randomUUID());
+
+            geozoneService.save(geozone);
             return successResponse();
         } catch (Exception e) {
             return badResponse(e);
@@ -58,10 +71,12 @@ public class ClientController {
     @RequestMapping("/delete/{id}")
     public ResponseEntity deleteById(HttpServletRequest request, @PathVariable UUID id) {
         try {
-            clientService.deleteById(id);
+            geozoneService.deleteById(id);
             return successResponse();
         } catch (Exception e) {
             return badResponse(e);
         }
     }
+
+
 }

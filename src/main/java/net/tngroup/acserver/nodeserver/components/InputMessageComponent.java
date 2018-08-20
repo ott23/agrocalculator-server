@@ -24,6 +24,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Component
 public class InputMessageComponent {
@@ -60,12 +61,14 @@ public class InputMessageComponent {
     */
     private Map<Channel, String> messageCacheMap = new HashMap<>();
 
-    public void readMessage(Channel channel, String msg) {
+    public Message readMessage(Channel channel, String msg) throws Exception {
         try {
             if (messageCacheMap.containsKey(channel)) msg = messageCacheMap.remove(channel) + msg;
 
             Pattern p = Pattern.compile("-[0-9]+-");
             Matcher m = p.matcher(msg);
+
+            Message message = null;
 
             while (m.find()) {
                 String result_msg;
@@ -77,7 +80,7 @@ public class InputMessageComponent {
                     result_msg = msg.substring(m.end(), m.end() + length);
 
                     InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
-                    Message message = base64Message(result_msg);
+                    message = base64Message(result_msg);
                     if (message == null) {
                         message = decMessage(result_msg, address);
                         message.setEncoded(true);
@@ -85,11 +88,13 @@ public class InputMessageComponent {
 
                     messageHandler(message, address);
                 } else messageCacheMap.put(channel, msg.substring(m.start(), msg.length()));
-
             }
+
+            return message;
+
         } catch (Exception e) {
-            logger.error("Error during message reading: %s", e.getMessage());
             outputMessageComponent.sendMessageWrongMessage(channel);
+            throw e;
         }
     }
 
@@ -99,7 +104,6 @@ public class InputMessageComponent {
     private Message base64Message(String msg) {
         try {
             msg = new String(Base64.getDecoder().decode(msg));
-
             return new Message(msg);
         } catch (Exception e) {
             return null;
@@ -114,9 +118,9 @@ public class InputMessageComponent {
             Node node = nodeService.getByAddressAndConnection(address, true);
             if (node == null) {
                 List<Node> nodes = nodeService.getAllByAddress(address);
-                for (Node c : nodes) {
+                for (Node n : nodes) {
                     try {
-                        msg = cipherComponent.decodeDes(msg, c.getKey());
+                        msg = cipherComponent.decodeDes(msg, n.getKey());
                         return new Message(msg);
                     } catch (Exception e) {
                         // Key is not correct
@@ -140,30 +144,23 @@ public class InputMessageComponent {
     Message handler
      */
     private void messageHandler(Message message, InetSocketAddress address) throws Exception {
-        logger.info("Message from client '%s': %s", address.toString(), message.getType());
 
         // Key request
         if (message.getType().equals("key request") && !message.isEncoded()) {
             keyRequestEvent(message, address);
-            return;
         }
         // Status
-        if (message.getType().equals("status") && message.isEncoded()) {
+        else if (message.getType().equals("status") && message.isEncoded()) {
             statusEvent(message, address);
-            return;
         }
         // Settings request
-        if (message.getType().equals("settings request") && message.isEncoded()) {
+        else if (message.getType().equals("settings request") && message.isEncoded()) {
             propertiesRequestEvent(message, address);
-            return;
         }
         // Confirm
-        if (message.getType().equals("confirm") && message.isEncoded()) {
+        else if (message.getType().equals("confirm") && message.isEncoded()) {
             confirmEvent(message, address);
-            return;
-        }
-
-        throw new Exception("Message type not found");
+        } else throw new Exception("Message type not found");
     }
 
     private void keyRequestEvent(Message message, InetSocketAddress address) {
@@ -172,16 +169,12 @@ public class InputMessageComponent {
         nodeStatusService.save(new NodeStatus("CONNECTED", new Date(), node));
     }
 
-    private void propertiesRequestEvent(Message message, InetSocketAddress address) {
-        try {
-            Node node = statusComponent.checkNode(message.getCode(), message.getValue(), address);
-            List<Setting> settingList = settingService.getAllByCalculatorId(node.getId());
-            String json = new ObjectMapper().writeValueAsString(settingList);
-            taskService.save(new Task(node, "settings", json));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            logger.error("Error during json forming: %s", e.getMessage());
-        }
+    private void propertiesRequestEvent(Message message, InetSocketAddress address) throws Exception {
+        Node node = statusComponent.checkNode(message.getCode(), message.getValue(), address);
+        List<Setting> settingList = settingService.getAllByCalculatorId(node.getId());
+        settingList = settingList.stream().peek(setting -> setting.setNode(null)).collect(Collectors.toList());
+        String json = new ObjectMapper().writeValueAsString(settingList);
+        taskService.save(new Task(node, "settings", json));
     }
 
     private void statusEvent(Message message, InetSocketAddress address) {

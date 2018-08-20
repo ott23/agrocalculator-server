@@ -1,4 +1,4 @@
-package net.tngroup.acserver.databases.cassandra.service;
+package net.tngroup.acserver.databases.cassandra.services;
 
 import net.tngroup.acserver.databases.cassandra.models.Unit;
 import net.tngroup.acserver.databases.cassandra.repositories.UnitRepository;
@@ -22,11 +22,8 @@ public class UnitServiceImpl implements UnitService {
     }
 
     @Override
-    public List<Unit> getAllByNameOrImei(String name, String imei) {
-        Set<Unit> unitSet = new HashSet<>();
-        unitSet.addAll(unitRepository.findAllByName(name));
-        unitSet.addAll(unitRepository.findAllByImei(imei));
-        return new ArrayList<>(unitSet);
+    public List<Unit> getAllByImei(String imei) {
+        return unitRepository.findAllByImei(imei);
     }
 
     @Override

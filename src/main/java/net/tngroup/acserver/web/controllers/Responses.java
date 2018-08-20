@@ -35,8 +35,10 @@ class Responses {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
-    static ResponseEntity conflictResponse() {
-        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    static ResponseEntity conflictResponse(String col) {
+        ObjectNode response = new ObjectMapper().createObjectNode();
+        response.put("response", "Column conflict - " + col);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response.toString());
     }
 
     static ResponseEntity failedDependencyResponse() {

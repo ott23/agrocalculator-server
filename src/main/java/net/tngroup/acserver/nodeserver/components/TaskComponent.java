@@ -52,7 +52,7 @@ public class TaskComponent extends Thread {
                 String key = null;
                 if (!t.getType().equals("key")) key = node.getKey();
 
-                outputMessageComponent.sendMessage(new Message(t), channel, key);
+                outputMessageComponent.sendMessage(channel, key, new Message(t));
             }
         });
     }

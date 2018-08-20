@@ -33,7 +33,7 @@ public class SettingServiceImpl implements SettingService {
                 .filter(s -> setting.getName().equals(s.getName()))
                 .findFirst()
                 .orElse(setting))
-                .peek(s -> s.setNode(null))
+                //.peek(s -> s.setNode(null))
                 .collect(Collectors.toList());
     }
 
