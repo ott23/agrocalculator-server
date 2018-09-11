@@ -45,11 +45,10 @@ public class GeozoneController {
     }
 
     @RequestMapping("/save")
-    public ResponseEntity save(HttpServletRequest request, @RequestBody String jsonRequest) {
+    public ResponseEntity save(HttpServletRequest request, @RequestBody Geozone geozone) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
-            Geozone geozone = objectMapper.readValue(jsonRequest, Geozone.class);
 
             try {
                 objectMapper.readTree(geozone.getGeometry());

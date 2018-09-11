@@ -39,9 +39,8 @@ public class ClientController {
     }
 
     @RequestMapping("/save")
-    public ResponseEntity save(HttpServletRequest request, @RequestBody String jsonRequest) {
+    public ResponseEntity save(HttpServletRequest request, @RequestBody Client client) {
         try {
-            Client client = new ObjectMapper().readValue(jsonRequest, Client.class);
 
             List<Client> clientList = clientService.getAllByName(client.getName());
             if (clientList.size() == 1 && !clientList.get(0).getId().equals(client.getId()) || clientList.size() > 1)

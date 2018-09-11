@@ -44,9 +44,8 @@ public class SettingController {
     }
 
     @RequestMapping("/setForNode")
-    public ResponseEntity setForCalculator(HttpServletRequest request, @RequestBody String jsonRequest) {
+    public ResponseEntity setForCalculator(HttpServletRequest request, @RequestBody Setting inputSetting) {
         try {
-            Setting inputSetting = new ObjectMapper().readValue(jsonRequest, Setting.class);
             Setting setting = settingService.getByNameAndCalculatorId(inputSetting.getName(), inputSetting.getNode().getId());
             if (setting != null) {
                 setting.setValue(inputSetting.getValue());
@@ -63,9 +62,8 @@ public class SettingController {
     }
 
     @RequestMapping("/set")
-    public ResponseEntity set(HttpServletRequest request, @RequestBody String jsonRequest) {
+    public ResponseEntity set(HttpServletRequest request, @RequestBody Setting setting) {
         try {
-            Setting setting = new ObjectMapper().readValue(jsonRequest, Setting.class);
             settingService.save(setting);
             return successResponse();
         } catch (Exception e) {

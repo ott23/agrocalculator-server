@@ -44,9 +44,8 @@ public class UserController {
     }
 
     @RequestMapping("/save")
-    public ResponseEntity save(HttpServletRequest request, @RequestBody String jsonRequest) {
+    public ResponseEntity save(HttpServletRequest request, @RequestBody User user) {
         try {
-            User user = new ObjectMapper().readValue(jsonRequest, User.class);
 
             List<User> userList = userService.getAllByUsername(user.getUsername());
             if (userList.size() == 1 && !userList.get(0).getId().equals(user.getId()) || userList.size() > 1)
