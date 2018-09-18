@@ -77,9 +77,8 @@ public class NodeController {
     }
 
     @RequestMapping("/set")
-    public ResponseEntity set(HttpServletRequest request, @RequestBody String jsonRequest) {
+    public ResponseEntity set(HttpServletRequest request, @RequestBody Node node) {
         try {
-            Node node = new ObjectMapper().readValue(jsonRequest, Node.class);
             nodeService.save(node);
             return successResponse();
         } catch (Exception e) {

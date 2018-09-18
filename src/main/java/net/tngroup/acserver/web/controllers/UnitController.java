@@ -44,9 +44,8 @@ public class UnitController {
     }
 
     @RequestMapping("/save")
-    public ResponseEntity save(HttpServletRequest request, @RequestBody String jsonRequest) {
+    public ResponseEntity save(HttpServletRequest request, @RequestBody Unit unit) {
         try {
-            Unit unit = new ObjectMapper().readValue(jsonRequest, Unit.class);
 
             List<Unit> unitList = unitService.getAllByImei(unit.getImei());
             if (unitList.size() == 1 && !unitList.get(0).getId().equals(unit.getId()) || unitList.size() > 1) return conflictResponse("imei");
