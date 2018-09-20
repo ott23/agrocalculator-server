@@ -1,6 +1,5 @@
 package net.tngroup.acserver.web.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import net.tngroup.acserver.databases.h2.models.Setting;
 import net.tngroup.acserver.databases.h2.services.SettingService;
 import org.springframework.http.ResponseEntity;
