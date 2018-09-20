@@ -1,6 +1,5 @@
 package net.tngroup.acserver.web.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import net.tngroup.acserver.databases.h2.models.User;
 import net.tngroup.acserver.databases.h2.services.UserService;
 import org.springframework.http.ResponseEntity;
@@ -9,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-import static net.tngroup.acserver.web.controllers.Responses.*;
+import static net.tngroup.common.responses.Responses.*;
 
 @CrossOrigin
 @RestController

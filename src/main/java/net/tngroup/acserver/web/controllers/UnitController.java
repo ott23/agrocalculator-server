@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.UUID;
 
-import static net.tngroup.acserver.web.controllers.Responses.*;
+import static net.tngroup.common.responses.Responses.*;
 
 @RestController
 @Lazy
@@ -35,12 +35,9 @@ public class UnitController {
 
     @RequestMapping
     public ResponseEntity getList(HttpServletRequest request) {
-        try {
-            List<Unit> unitList = unitService.getAll();
-            return okResponse(unitList);
-        } catch (JsonProcessingException e) {
-            return badResponse(e);
-        }
+
+        List<Unit> unitList = unitService.getAll();
+        return okResponse(unitList);
     }
 
     @RequestMapping("/save")
@@ -48,7 +45,8 @@ public class UnitController {
         try {
 
             List<Unit> unitList = unitService.getAllByImei(unit.getImei());
-            if (unitList.size() == 1 && !unitList.get(0).getId().equals(unit.getId()) || unitList.size() > 1) return conflictResponse("imei");
+            if (unitList.size() == 1 && !unitList.get(0).getId().equals(unit.getId()) || unitList.size() > 1)
+                return conflictResponse("imei");
 
             Client client = clientService.getById(unit.getClient());
             if (client == null) return failedDependencyResponse();
