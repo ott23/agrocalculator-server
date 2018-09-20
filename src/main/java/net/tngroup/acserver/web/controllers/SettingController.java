@@ -25,65 +25,54 @@ public class SettingController {
 
     @RequestMapping
     public ResponseEntity getList(HttpServletRequest request) {
-        try {
-            List<Setting> settingList = settingService.getAll();
-            return okFullResponse(settingList);
-        } catch (Exception e) {
-            return badResponse(e);
-        }
+
+        final List<Setting> settingList = settingService.getAll();
+        return okFullResponse(settingList);
     }
 
     @RequestMapping("/getByNode/{id}")
-    public ResponseEntity getListByCalculatorId(HttpServletRequest request, @PathVariable int id) {
-        try {
-            List<Setting> settingList = settingService.getAllByCalculatorId(id);
-            return okResponse(settingList);
-        } catch (Exception e) {
-            return badResponse(e);
-        }
+    public ResponseEntity getListByCalculatorId(HttpServletRequest request, @PathVariable Integer id) {
+
+        final List<Setting> settingList = settingService.getAllByCalculatorId(id);
+        return okResponse(settingList);
     }
 
     @RequestMapping("/setForNode")
     public ResponseEntity setForCalculator(HttpServletRequest request, @RequestBody Setting inputSetting) {
-        try {
-            Setting setting = settingService.getByNameAndCalculatorId(inputSetting.getName(), inputSetting.getNode().getId());
-            if (setting != null) {
-                setting.setValue(inputSetting.getValue());
-            } else {
-                setting = new Setting(inputSetting.getName(), inputSetting.getValue());
-                setting.setNode(inputSetting.getNode());
-            }
-            settingService.save(setting);
-            return successResponse();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return badResponse(e);
+
+        //TODO Возможно NPE если в node будет null
+        Setting setting = settingService.getByNameAndCalculatorId(
+                inputSetting.getName(), inputSetting.getNode().getId()
+        );
+        if (setting != null) {
+            setting.setValue(inputSetting.getValue());
+        } else {
+            //TODO Возможно NPE тк конструктор требует не Null в аргументах
+            setting = new Setting(inputSetting.getName(), inputSetting.getValue());
+            setting.setNode(inputSetting.getNode());
         }
+        settingService.save(setting);
+        return successResponse();
+
     }
 
     @RequestMapping("/set")
     public ResponseEntity set(HttpServletRequest request, @RequestBody Setting setting) {
-        try {
-            settingService.save(setting);
-            return successResponse();
-        } catch (Exception e) {
-            return badResponse(e);
-        }
+
+        settingService.save(setting);
+        return successResponse();
     }
 
     @RequestMapping("/delete/{id}")
-    public ResponseEntity deleteById(HttpServletRequest request, @PathVariable int id) {
-        try {
-            Setting setting = settingService.getById(id);
-            if (setting != null && setting.getNode() != null) {
-                settingService.deleteById(id);
-            } else {
-                throw new Exception("Setting not found");
-            }
-            return successResponse();
-        } catch (Exception e) {
-            return badResponse(e);
+    public ResponseEntity deleteById(HttpServletRequest request, @PathVariable int id) throws Exception {
+
+        final Setting setting = settingService.getById(id);
+        if (setting != null && setting.getNode() != null) {
+            settingService.deleteById(id);
+        } else {
+            throw new Exception("Setting not found");
         }
+        return successResponse();
     }
 
 }
