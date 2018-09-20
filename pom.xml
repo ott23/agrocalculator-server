@@ -41,7 +41,7 @@
         <dependency>
             <groupId>com.github.weery28</groupId>
             <artifactId>agrocalculator-common</artifactId>
-            <version>ab91a02047</version>
+            <version>0.0.1</version>
         </dependency>
 
 
