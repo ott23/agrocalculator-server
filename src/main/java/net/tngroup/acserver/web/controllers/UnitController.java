@@ -48,7 +48,7 @@ public class UnitController {
             if (unitList.size() == 1 && !unitList.get(0).getId().equals(unit.getId()) || unitList.size() > 1)
                 return conflictResponse("imei");
 
-            Client client = clientService.getById(unit.getClient());
+            final Client client = clientService.getById(unit.getClient());
             if (client == null) return failedDependencyResponse();
 
             if (unit.getId() == null) unit.setId(UUID.randomUUID());
