@@ -1,7 +1,5 @@
 package net.tngroup.acserver.web.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import net.tngroup.acserver.databases.cassandra.models.Client;
 import net.tngroup.acserver.databases.cassandra.services.ClientService;
 import org.springframework.context.annotation.Lazy;
@@ -15,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.UUID;
 
-import static net.tngroup.acserver.web.controllers.Responses.*;
+import static net.tngroup.common.responses.Responses.*;
 
 @RestController
 @Lazy
@@ -30,12 +28,10 @@ public class ClientController {
 
     @RequestMapping
     public ResponseEntity getList(HttpServletRequest request) {
-        try {
-            List<Client> clientList = clientService.getAll();
-            return okResponse(clientList);
-        } catch (JsonProcessingException e) {
-            return badResponse(e);
-        }
+
+        List<Client> clientList = clientService.getAll();
+        return okResponse(clientList);
+
     }
 
     @RequestMapping("/save")
@@ -44,7 +40,7 @@ public class ClientController {
 
             List<Client> clientList = clientService.getAllByName(client.getName());
             if (clientList.size() == 1 && !clientList.get(0).getId().equals(client.getId()) || clientList.size() > 1)
-                return Responses.conflictResponse("name");
+                return conflictResponse("name");
 
             if (client.getId() == null) client.setId(UUID.randomUUID());
             clientService.save(client);

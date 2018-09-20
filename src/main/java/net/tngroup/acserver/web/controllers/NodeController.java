@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-import static net.tngroup.acserver.web.controllers.Responses.*;
+import static net.tngroup.common.responses.Responses.*;
 
 @CrossOrigin
 @RestController
@@ -34,14 +34,11 @@ public class NodeController {
         this.taskService = taskService;
     }
 
-        @RequestMapping
+    @RequestMapping
     public ResponseEntity getList(HttpServletRequest request) {
-        try {
-            List<Node> nodeList = nodeService.getAll();
-            return okResponse(nodeList);
-        } catch (JsonProcessingException e) {
-            return badResponse(e);
-        }
+
+        List<Node> nodeList = nodeService.getAll();
+        return okResponse(nodeList);
     }
 
     @RequestMapping("/getAllByName/{name}")

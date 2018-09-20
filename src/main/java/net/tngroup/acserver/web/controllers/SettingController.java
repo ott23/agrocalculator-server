@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-import static net.tngroup.acserver.web.controllers.Responses.*;
+import static net.tngroup.common.responses.Responses.*;
+
 
 @CrossOrigin
 @RestController

@@ -1,11 +1,12 @@
 package net.tngroup.acserver.web.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.tngroup.acserver.databases.cassandra.models.Client;
 import net.tngroup.acserver.databases.cassandra.models.Geozone;
 import net.tngroup.acserver.databases.cassandra.services.ClientService;
 import net.tngroup.acserver.databases.cassandra.services.GeozoneService;
+import net.tngroup.common.json.Json;
+import net.tngroup.common.json.JsonComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.UUID;
 
-import static net.tngroup.acserver.web.controllers.Responses.*;
+import static net.tngroup.common.responses.Responses.*;
+
 
 @RestController
 @RequestMapping("/geozone")
@@ -26,32 +28,29 @@ public class GeozoneController {
 
     private GeozoneService geozoneService;
     private ClientService clientService;
+    private JsonComponent jsonComponent;
 
     @Autowired
     public GeozoneController(@Lazy ClientService clientService,
-                             @Lazy GeozoneService geozoneService) {
+                             @Lazy GeozoneService geozoneService,
+                             JsonComponent jsonComponent) {
         this.geozoneService = geozoneService;
         this.clientService = clientService;
     }
 
     @RequestMapping
     public ResponseEntity getList(HttpServletRequest request) {
-        try {
-            List<Geozone> geozoneList = geozoneService.getAll();
-            return okResponse(geozoneList);
-        } catch (JsonProcessingException e) {
-            return badResponse(e);
-        }
+
+        List<Geozone> geozoneList = geozoneService.getAll();
+        return okResponse(geozoneList);
     }
 
     @RequestMapping("/save")
     public ResponseEntity save(HttpServletRequest request, @RequestBody Geozone geozone) {
-        ObjectMapper objectMapper = new ObjectMapper();
-
         try {
 
             try {
-                objectMapper.readTree(geozone.getGeometry());
+                jsonComponent.getObjectMapper().readTree(geozone.getGeometry());
             } catch (Exception e) {
                 throw new Exception("Json not valid");
             }
