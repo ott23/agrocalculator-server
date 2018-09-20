@@ -45,6 +45,24 @@
         </dependency>
 
 
+        <!-- Spring Boot -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Spring Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
         <!-- Spring JPA -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -75,7 +93,7 @@
             <artifactId>h2</artifactId>
             <version>${h2.version}</version>
         </dependency>
-
+        
         <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
