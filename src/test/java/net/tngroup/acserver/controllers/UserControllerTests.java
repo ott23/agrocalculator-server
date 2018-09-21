@@ -66,7 +66,7 @@ public class UserControllerTests {
     }
 
     @Test
-    public void givenExistUser_whenCallSave_thenShouldBeReturnConflictResponse(){
+    public void givenExistUser_whenCallSave_thenShouldBeReturnConflictResponse() {
 
         final User user = new User();
         user.setId(0);
@@ -84,7 +84,7 @@ public class UserControllerTests {
     }
 
     @Test
-    public void givenValidUser_whenCallSave_thenShouldBeReturnConflictResponse(){
+    public void givenValidUser_whenCallSave_thenShouldBeReturnConflictResponse() {
 
         final User user = new User();
         user.setId(0);
@@ -99,7 +99,7 @@ public class UserControllerTests {
     }
 
     @Test
-    public void givenRequestForDeleteUser_whenCallDelete_thenAlwaysReturnSuccces(){
+    public void givenRequestForDeleteUser_whenCallDelete_thenAlwaysReturnSuccces() {
 
         assertEquals(
                 userController.deleteById(httpServletRequest, 0),
@@ -108,7 +108,5 @@ public class UserControllerTests {
 
         verify(userService, times(1)).deleteById(0);
     }
-
-
 
 }
