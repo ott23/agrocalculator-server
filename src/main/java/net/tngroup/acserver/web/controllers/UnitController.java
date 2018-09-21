@@ -57,11 +57,8 @@ public class UnitController {
 
     @RequestMapping("/delete/{id}")
     public ResponseEntity deleteById(HttpServletRequest request, @PathVariable UUID id) {
-        try {
-            unitService.deleteById(id);
-            return successResponse();
-        } catch (Exception e) {
-            return badResponse(e);
-        }
+
+        unitService.deleteById(id);
+        return successResponse();
     }
 }

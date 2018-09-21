@@ -1,19 +1,19 @@
 package net.tngroup.acserver.controllers;
 
-import net.tngroup.acserver.databases.h2.models.User;
-import net.tngroup.acserver.databases.h2.services.UserService;
-import net.tngroup.acserver.web.controllers.UserController;
-import org.junit.Before;
-import org.junit.Test;
+        import net.tngroup.acserver.databases.h2.models.User;
+        import net.tngroup.acserver.databases.h2.services.UserService;
+        import net.tngroup.acserver.web.controllers.UserController;
+        import org.junit.Before;
+        import org.junit.Test;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.List;
+        import javax.servlet.http.HttpServletRequest;
+        import java.util.List;
 
-import static net.tngroup.common.responses.Responses.*;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.*;
+        import static net.tngroup.common.responses.Responses.*;
+        import static org.junit.Assert.assertEquals;
+        import static org.mockito.ArgumentMatchers.any;
+        import static org.mockito.ArgumentMatchers.anyInt;
+        import static org.mockito.Mockito.*;
 
 public class UserControllerTests {
 
@@ -84,7 +84,7 @@ public class UserControllerTests {
     }
 
     @Test
-    public void givenValidUser_whenCallSave_thenShouldBeReturnConflictResponse() {
+    public void givenValidUser_whenCallSave_thenShouldBeReturnConflictResponse()    {
 
         final User user = new User();
         user.setId(0);
