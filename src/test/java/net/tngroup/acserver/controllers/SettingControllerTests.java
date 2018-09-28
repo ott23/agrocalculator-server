@@ -23,7 +23,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 
-public class SettingControllerTest {
+public class SettingControllerTests {
 
     private SettingController settingController;
     private SettingService settingService;

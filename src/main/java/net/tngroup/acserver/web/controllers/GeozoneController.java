@@ -1,11 +1,9 @@
 package net.tngroup.acserver.web.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import net.tngroup.acserver.databases.cassandra.models.Client;
 import net.tngroup.acserver.databases.cassandra.models.Geozone;
 import net.tngroup.acserver.databases.cassandra.services.ClientService;
 import net.tngroup.acserver.databases.cassandra.services.GeozoneService;
-import net.tngroup.common.json.Json;
 import net.tngroup.common.json.JsonComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -36,44 +34,42 @@ public class GeozoneController {
                              JsonComponent jsonComponent) {
         this.geozoneService = geozoneService;
         this.clientService = clientService;
+        this.jsonComponent = jsonComponent;
     }
 
     @RequestMapping
     public ResponseEntity getList(HttpServletRequest request) {
 
-        List<Geozone> geozoneList = geozoneService.getAll();
+        final List<Geozone> geozoneList = geozoneService.getAll();
         return okResponse(geozoneList);
     }
 
     @RequestMapping("/save")
-    public ResponseEntity save(HttpServletRequest request, @RequestBody Geozone geozone) {
+    public ResponseEntity save(HttpServletRequest request, @RequestBody Geozone geozone) throws Exception {
+
+
         try {
-
-            try {
+            if (geozone.getGeometry() != null){
                 jsonComponent.getObjectMapper().readTree(geozone.getGeometry());
-            } catch (Exception e) {
-                throw new Exception("Json not valid");
             }
-
-            Client client = clientService.getById(geozone.getClient());
-            if (client == null) return failedDependencyResponse();
-            if (geozone.getId() == null) geozone.setId(UUID.randomUUID());
-
-            geozoneService.save(geozone);
-            return successResponse();
         } catch (Exception e) {
-            return badResponse(e);
+            throw new Exception("Json not valid");
         }
+
+        final Client client = clientService.getById(geozone.getClient());
+        if (client == null) return failedDependencyResponse();
+        if (geozone.getId() == null) geozone.setId(UUID.randomUUID());
+
+        geozoneService.save(geozone);
+        return successResponse();
+
     }
 
     @RequestMapping("/delete/{id}")
     public ResponseEntity deleteById(HttpServletRequest request, @PathVariable UUID id) {
-        try {
-            geozoneService.deleteById(id);
-            return successResponse();
-        } catch (Exception e) {
-            return badResponse(e);
-        }
+        geozoneService.deleteById(id);
+        return successResponse();
+
     }
 
 

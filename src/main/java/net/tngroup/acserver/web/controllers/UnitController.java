@@ -1,7 +1,5 @@
 package net.tngroup.acserver.web.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import net.tngroup.acserver.databases.cassandra.models.Client;
 import net.tngroup.acserver.databases.cassandra.models.Unit;
 import net.tngroup.acserver.databases.cassandra.services.ClientService;
@@ -42,31 +40,25 @@ public class UnitController {
 
     @RequestMapping("/save")
     public ResponseEntity save(HttpServletRequest request, @RequestBody Unit unit) {
-        try {
 
-            List<Unit> unitList = unitService.getAllByImei(unit.getImei());
-            if (unitList.size() == 1 && !unitList.get(0).getId().equals(unit.getId()) || unitList.size() > 1)
-                return conflictResponse("imei");
+        List<Unit> unitList = unitService.getAllByImei(unit.getImei());
+        if (unitList.size() == 1 && !unitList.get(0).getId().equals(unit.getId()) || unitList.size() > 1)
+            return conflictResponse("imei");
 
-            Client client = clientService.getById(unit.getClient());
-            if (client == null) return failedDependencyResponse();
+        final Client client = clientService.getById(unit.getClient());
+        if (client == null) return failedDependencyResponse();
 
-            if (unit.getId() == null) unit.setId(UUID.randomUUID());
+        if (unit.getId() == null) unit.setId(UUID.randomUUID());
 
-            unitService.save(unit);
-            return successResponse();
-        } catch (Exception e) {
-            return badResponse(e);
-        }
+        unitService.save(unit);
+        return successResponse();
+
     }
 
     @RequestMapping("/delete/{id}")
     public ResponseEntity deleteById(HttpServletRequest request, @PathVariable UUID id) {
-        try {
-            unitService.deleteById(id);
-            return successResponse();
-        } catch (Exception e) {
-            return badResponse(e);
-        }
+
+        unitService.deleteById(id);
+        return successResponse();
     }
 }
